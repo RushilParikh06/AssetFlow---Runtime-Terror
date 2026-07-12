@@ -139,3 +139,19 @@ assetflow/
 │   └── middleware.ts 
 └── tests/
 ```
+
+##Tech Stack
+
+```
+Frontend:
+- Next.js 15 App Router
+- TypeScript
+- TailwindCSS
+- Shadcn/UI
+- React Hook Form
+- Zod
+- Zustand
+- TanStack Query
+- Recharts
+- FullCalendar
+
