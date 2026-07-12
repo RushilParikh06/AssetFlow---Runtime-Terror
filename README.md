@@ -183,6 +183,54 @@ The server will start at `http://localhost:3000`. You can query the REST endpoin
 
 ---
 
+## 🔧 Environment Variables Reference
+
+Create a `.env` file in the root directory. Below are the variables required and their explanations:
+
+| Variable | Description | Development Default | Production Target Example |
+| :--- | :--- | :--- | :--- |
+| `DATABASE_URL` | Connection URL for PostgreSQL. | `postgresql://panavpatel@localhost:5432/assetflow?schema=public` | `postgresql://user:password@neon.tech/assetflow?sslmode=require` |
+| `REDIS_URL` | Connection URL for Redis (caching/BullMQ queues). | `redis://localhost:6379` | `rediss://default:password@redis-server.railway.app:6379` |
+| `AUTH_SECRET` | 32-character encryption key for signing auth cookies. | `e4ba73297d9bfed4ed0dd413b47a6dd5779af18a90203fabcc26c42ff856656d` | Secure random hash (e.g. `openssl rand -base64 32`) |
+| `NEXTAUTH_URL` | Canonical URL of the application. | `http://localhost:3000` | `https://your-production-app.vercel.app` |
+| `SUPABASE_URL` | Supabase endpoint URL for document uploads. | `""` (defaults to local storage) | `https://your-project-ref.supabase.co` |
+| `SUPABASE_ANON_KEY` | Supabase client authorization key. | `""` (defaults to local storage) | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` |
+| `SUPABASE_BUCKET` | The name of the storage bucket for assets. | `assetflow` | `assetflow-prod` |
+
+---
+
+## 🌐 Productionizing & Deploys
+
+For production environments, the application requires separate hosts for frontend/APIs, database, cache, and long-running background tasks.
+
+### 1. Production Database Setup (PostgreSQL)
+1. Provision a managed PostgreSQL instance (e.g., via **Neon.tech**, **Supabase**, or **AWS RDS**).
+2. Retrieve the production connection URL and ensure it has `?sslmode=require` appended.
+3. Sync your database schema by running the deploy command (do not use `migrate dev` in production):
+   ```bash
+   DATABASE_URL="your-production-url" npx prisma migrate deploy
+   ```
+
+### 2. Caching & Background Queues Setup (Redis)
+1. Provision a managed Redis database (e.g., via **Upstash** or **Railway Redis**).
+2. Set the `REDIS_URL` variable.
+
+### 3. Continuous Background Workers
+Next.js serverless functions (like Vercel API routes) terminate quickly and cannot run continuous background listeners. 
+1. Build a standalone worker script (e.g. `tsx src/workers/reminders.ts`) that runs a BullMQ `Worker`.
+2. Deploy this script as a **separate continuous running container** on a platform like **Railway** or a VPS.
+
+### 4. Deploying the Next.js App
+1. Host the Next.js application on **Vercel** or **Railway**.
+2. Configure all environment variables in your hosting provider's panel.
+3. Vercel/Railway will run:
+   ```bash
+   npm run build
+   npm run start
+   ```
+
+---
+
 ## 🔑 Test Accounts
 The database is seeded with these pre-configured user credentials (all passwords have the suffix `123!`):
 
