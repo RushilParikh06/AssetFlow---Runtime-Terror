@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
+import { Loader2, AlertCircle } from "lucide-react";
 
 type View = "login" | "signup" | "signup-success" | "forgot" | "forgot-success";
 
@@ -16,15 +18,16 @@ export default function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [org, setOrg] = useState("");
+  const [phone, setPhone] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [role, setRole] = useState("employee");
 
   const [errors, setErrors] = useState<Record<string, boolean>>({});
+  const [authError, setAuthError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const emailOk = !isValidEmail(email);
     const passOk = !password;
@@ -35,29 +38,72 @@ export default function AuthPage() {
     });
 
     if (!emailOk && !passOk) {
-      // Mock login - redirect to dashboard
-      router.push("/dashboard");
+      try {
+        setLoading(true);
+        setAuthError("");
+        
+        // NextAuth v5 client signIn callback configuration
+        const res = await signIn("credentials", {
+          email,
+          password,
+          redirect: false
+        });
+
+        if (res?.error) {
+          setAuthError("Invalid email or password. Please try again.");
+        } else {
+          router.push("/dashboard");
+          router.refresh();
+        }
+      } catch (err) {
+        setAuthError("An unexpected login error occurred.");
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    const nameOk = !name;
+    const nameOk = !name || name.length < 2;
     const emailOk = !isValidEmail(email);
-    const orgOk = !org;
-    const passOk = password.length < 8;
+    const passOk = password.length < 6;
     const confirmOk = password !== confirm;
 
     setErrors({
       signupName: nameOk,
       signupEmail: emailOk,
-      signupOrg: orgOk,
       signupPassword: passOk,
       signupConfirm: confirmOk,
     });
 
-    if (!nameOk && !emailOk && !orgOk && !passOk && !confirmOk) {
-      setView("signup-success");
+    if (!nameOk && !emailOk && !passOk && !confirmOk) {
+      try {
+        setLoading(true);
+        setAuthError("");
+
+        const res = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            email,
+            password,
+            phone: phone || null
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          setView("signup-success");
+        } else {
+          setAuthError(data.error || "Signup failed. Account may already exist.");
+        }
+      } catch (err) {
+        setAuthError("Server communication error during registration.");
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -94,6 +140,13 @@ export default function AuthPage() {
               <p>Sign in to your <span>AssetFlow</span> account</p>
             </div>
 
+            {authError && (
+              <div className="alert-banner" style={{ background: 'var(--red-dim)', borderColor: 'rgba(239,68,68,0.2)', color: 'var(--red)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', borderRadius: '6px', fontSize: '13px' }}>
+                <AlertCircle size={16} />
+                <span>{authError}</span>
+              </div>
+            )}
+
             <form className="auth-form" onSubmit={handleLogin} noValidate>
               <div className={`form-group ${errors.loginEmail ? 'has-error' : ''}`}>
                 <label>Email address</label>
@@ -103,6 +156,7 @@ export default function AuthPage() {
                   placeholder="you@company.com" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
                 />
                 <span className="form-error">Please enter a valid email address</span>
               </div>
@@ -116,8 +170,9 @@ export default function AuthPage() {
                     placeholder="Enter your password" 
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    disabled={loading}
                   />
-                  <button type="button" className="toggle-password" onClick={() => setShowPassword(!showPassword)}>
+                  <button type="button" className="toggle-password" onClick={() => setShowPassword(!showPassword)} disabled={loading}>
                     {showPassword ? '\u{1F648}' : '\u{1F441}'}
                   </button>
                 </div>
@@ -129,7 +184,10 @@ export default function AuthPage() {
                 <span className="form-link" onClick={() => setView("forgot")}>Forgot password?</span>
               </div>
 
-              <button type="submit" className="btn-primary auth">Sign In</button>
+              <button type="submit" className="btn-primary auth" disabled={loading} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                {loading && <Loader2 className="animate-spin" size={16} />}
+                {loading ? "Signing In..." : "Sign In"}
+              </button>
             </form>
 
             <div className="auth-divider"><span>or</span></div>
@@ -137,7 +195,7 @@ export default function AuthPage() {
             <div className="info-card">
               <h3>New here?</h3>
               <p>Create an account to start managing your organization&apos;s assets in minutes.</p>
-              <button type="button" className="btn-secondary auth" onClick={() => setView("signup")}>Create Account</button>
+              <button type="button" className="btn-secondary auth" onClick={() => { setAuthError(""); setView("signup"); }} disabled={loading}>Create Account</button>
             </div>
           </div>
         )}
@@ -151,62 +209,72 @@ export default function AuthPage() {
               <p>Join <span>AssetFlow</span> and take control of your assets</p>
             </div>
 
+            {authError && (
+              <div className="alert-banner" style={{ background: 'var(--red-dim)', borderColor: 'rgba(239,68,68,0.2)', color: 'var(--red)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', borderRadius: '6px', fontSize: '13px' }}>
+                <AlertCircle size={16} />
+                <span>{authError}</span>
+              </div>
+            )}
+
             <form className="auth-form" onSubmit={handleSignup} noValidate>
               <div className={`form-group ${errors.signupName ? 'has-error' : ''}`}>
-                <label>Full name</label>
+                <label>Full name *</label>
                 <input 
                   type="text" 
                   className={`form-input ${errors.signupName ? 'error' : ''}`} 
                   placeholder="Alex Morgan" 
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  disabled={loading}
                 />
-                <span className="form-error">Name is required</span>
+                <span className="form-error">Name must be at least 2 characters long</span>
               </div>
 
               <div className={`form-group ${errors.signupEmail ? 'has-error' : ''}`}>
-                <label>Work email</label>
+                <label>Work email *</label>
                 <input 
                   type="email" 
                   className={`form-input ${errors.signupEmail ? 'error' : ''}`} 
                   placeholder="alex@company.com" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
                 />
                 <span className="form-error">Please enter a valid email address</span>
               </div>
 
-              <div className={`form-group ${errors.signupOrg ? 'has-error' : ''}`}>
-                <label>Organization name</label>
+              <div className="form-group">
+                <label>Phone number (Optional)</label>
                 <input 
-                  type="text" 
-                  className={`form-input ${errors.signupOrg ? 'error' : ''}`} 
-                  placeholder="Acme Corporation" 
-                  value={org}
-                  onChange={(e) => setOrg(e.target.value)}
+                  type="tel" 
+                  className="form-input" 
+                  placeholder="+1 (555) 012-3456" 
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  disabled={loading}
                 />
-                <span className="form-error">Organization name is required</span>
               </div>
 
               <div className={`form-group ${errors.signupPassword ? 'has-error' : ''}`}>
-                <label>Password</label>
+                <label>Password *</label>
                 <div className="password-wrap">
                   <input 
                     type={showPassword ? "text" : "password"} 
                     className={`form-input ${errors.signupPassword ? 'error' : ''}`} 
-                    placeholder="Min. 8 characters" 
+                    placeholder="Min. 6 characters" 
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    disabled={loading}
                   />
-                  <button type="button" className="toggle-password" onClick={() => setShowPassword(!showPassword)}>
+                  <button type="button" className="toggle-password" onClick={() => setShowPassword(!showPassword)} disabled={loading}>
                     {showPassword ? '\u{1F648}' : '\u{1F441}'}
                   </button>
                 </div>
-                <span className="form-error">Password must be at least 8 characters</span>
+                <span className="form-error">Password must be at least 6 characters</span>
               </div>
 
               <div className={`form-group ${errors.signupConfirm ? 'has-error' : ''}`}>
-                <label>Confirm password</label>
+                <label>Confirm password *</label>
                 <div className="password-wrap">
                   <input 
                     type={showConfirm ? "text" : "password"} 
@@ -214,32 +282,23 @@ export default function AuthPage() {
                     placeholder="Re-enter your password" 
                     value={confirm}
                     onChange={(e) => setConfirm(e.target.value)}
+                    disabled={loading}
                   />
-                  <button type="button" className="toggle-password" onClick={() => setShowConfirm(!showConfirm)}>
+                  <button type="button" className="toggle-password" onClick={() => setShowConfirm(!showConfirm)} disabled={loading}>
                     {showConfirm ? '\u{1F648}' : '\u{1F441}'}
                   </button>
                 </div>
                 <span className="form-error">Passwords do not match</span>
               </div>
 
-              <div className="form-group">
-                <label>Role</label>
-                <select className="form-input form-select" value={role} onChange={(e) => setRole(e.target.value)}>
-                  <option value="employee">Employee</option>
-                  <option value="manager">Manager</option>
-                  <option value="auditor">Auditor</option>
-                </select>
-                <div className="role-note">
-                  <span className="role-badge">{role.charAt(0).toUpperCase() + role.slice(1)}</span>
-                  Admin roles are assigned by your organization later
-                </div>
-              </div>
-
-              <button type="submit" className="btn-primary auth">Create Account</button>
+              <button type="submit" className="btn-primary auth" disabled={loading} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                {loading && <Loader2 className="animate-spin" size={16} />}
+                {loading ? "Registering..." : "Create Account"}
+              </button>
             </form>
 
             <p className="auth-footer-link">
-              Already have an account? <span onClick={() => setView("login")}>Sign in</span>
+              Already have an account? <span onClick={() => { setAuthError(""); setView("login"); }}>Sign in</span>
             </p>
           </div>
         )}
@@ -249,12 +308,12 @@ export default function AuthPage() {
           <div className="auth-card">
             <div className="auth-header">
               <div className="success-icon">&#9993;</div>
-              <h1>Check your inbox</h1>
-              <p>We&apos;ve sent a verification link to your email</p>
+              <h1>Registration Complete</h1>
+              <p>Your AssetFlow account has been created successfully!</p>
             </div>
 
             <div className="success-note">
-              Click the link in your email to verify your account, then <strong>sign in</strong> to access your dashboard.
+              You can now sign in using your registered credentials to access your dashboard.
             </div>
 
             <div style={{ marginTop: '24px' }}>
