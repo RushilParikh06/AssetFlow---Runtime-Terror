@@ -1193,8 +1193,6 @@ footer {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   z-index: 40;
 }
 
@@ -1350,8 +1348,6 @@ footer {
   justify-content: space-between;
   padding: 0 32px;
   background: rgba(10, 10, 10, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
   z-index: 30;
   position: sticky;
