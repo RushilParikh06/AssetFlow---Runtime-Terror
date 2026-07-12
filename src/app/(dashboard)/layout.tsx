@@ -41,7 +41,7 @@ export default function DashboardLayout({
           <div className="nav-group-title">Overview</div>
           <Link href="/screen-3" className={`nav-item ${pathname === '/screen-3' ? 'active' : ''}`}>
             <LayoutDashboard />
-            <span>Screen 3</span>
+            <span>Dashboard</span>
           </Link>
           <Link href="/reports" className={`nav-item ${isActive('/reports')}`}>
             <BarChart3 />
