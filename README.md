@@ -98,7 +98,8 @@ assetflow/
 │   │       │       ├── verify/route.ts  
 │   │       │       └── close/route.ts
 │   │       ├── notifications/route.ts
-│   │       └──
+│   │       └── reports/route.ts
+│   │
 │   │
 └── tests/
 ```
