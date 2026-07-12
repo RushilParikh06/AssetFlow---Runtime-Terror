@@ -1,0 +1,752 @@
+You are a Senior Full Stack Architect and Principal Software Engineer.
+
+Build a production-ready ERP web application called:
+
+# AssetFlow
+Enterprise Asset & Resource Management System
+
+The application should resemble modern ERP systems like:
+
+- Odoo
+- ERPNext
+- Zoho Inventory
+- Linear
+- Notion
+
+=========================================================
+TECH STACK (STRICTLY FOLLOW)
+=========================================================
+
+Frontend:
+- Next.js 15 App Router
+- TypeScript
+- TailwindCSS
+- Shadcn/UI
+- React Hook Form
+- Zod
+- Zustand
+- TanStack Query
+- Recharts
+- FullCalendar
+
+Backend:
+- Next.js Route Handlers
+- Server Actions where appropriate
+- Prisma ORM
+- PostgreSQL
+
+Authentication:
+- Auth.js v5
+- JWT Sessions
+- RBAC
+
+Realtime:
+- Socket.io
+- Redis
+
+Background Jobs:
+- BullMQ
+
+Storage:
+- Supabase Storage
+
+Deployment Ready:
+- Vercel
+- Railway
+
+Architecture:
+- Feature Based Structure
+- Repository Pattern
+- Service Layer
+- SOLID Principles
+- Type Safe APIs
+- Scalable ERP Architecture
+
+=========================================================
+PROJECT GOAL
+=========================================================
+
+Build a centralized ERP platform that enables organizations to:
+
+1. Manage Departments
+2. Manage Employees
+3. Manage Asset Categories
+4. Register Assets
+5. Allocate Assets
+6. Transfer Assets
+7. Return Assets
+8. Book Shared Resources
+9. Manage Maintenance Workflows
+10. Run Audit Cycles
+11. Generate Reports
+12. Send Notifications
+13. Track Complete Asset History
+
+=========================================================
+ROLE BASED ACCESS CONTROL
+=========================================================
+
+Roles:
+
+1. Admin
+2. Asset Manager
+3. Department Head
+4. Employee
+5. Auditor (optional)
+
+=========================================================
+AUTHENTICATION MODULE
+=========================================================
+
+Implement:
+
+- Login
+- Signup
+- Forgot Password
+- Reset Password
+- Email Verification
+- Session Validation
+- Protected Routes
+- Role Middleware
+
+IMPORTANT RULES:
+
+- Signup creates only Employee accounts.
+- No role selection during signup.
+- Only Admin can promote users.
+- Users cannot self-assign privileges.
+
+=========================================================
+MODULE 1
+ORGANIZATION SETUP
+=========================================================
+
+Admin Only.
+
+Create:
+
+### Department Management
+
+Fields:
+
+- id
+- name
+- code
+- parentDepartment
+- departmentHead
+- description
+- status
+
+Features:
+
+- Create
+- Edit
+- Deactivate
+- Department Hierarchy
+
+### Asset Category Management
+
+Fields:
+
+- id
+- name
+- description
+- customFields
+- status
+
+Examples:
+
+- Electronics
+- Furniture
+- Vehicles
+- IT Equipment
+
+### Employee Directory
+
+Fields:
+
+- employeeId
+- name
+- email
+- phone
+- role
+- department
+- status
+- profileImage
+
+Features:
+
+- Promote Employee
+- Deactivate Employee
+- Search & Filters
+
+=========================================================
+MODULE 2
+ASSET MANAGEMENT
+=========================================================
+
+Create complete asset lifecycle management.
+
+Fields:
+
+- assetTag (auto generated)
+
+Examples:
+
+AF-0001
+AF-0002
+
+- assetName
+- category
+- serialNumber
+- acquisitionDate
+- acquisitionCost
+- warrantyExpiry
+- vendor
+- condition
+- location
+- sharedBookableFlag
+- qrCode
+- documents
+- photos
+
+Asset Status:
+
+1. Available
+2. Allocated
+3. Reserved
+4. Under Maintenance
+5. Lost
+6. Retired
+7. Disposed
+
+Create:
+
+- Asset List Page
+- Asset Details Page
+- Asset Timeline
+- Asset History
+- QR Asset Tracking
+
+Search By:
+
+- Asset Tag
+- QR
+- Category
+- Location
+- Status
+- Department
+- Serial Number
+
+=========================================================
+MODULE 3
+ASSET ALLOCATION
+=========================================================
+
+Features:
+
+- Allocate Asset
+- Transfer Asset
+- Return Asset
+- Allocation History
+
+Fields:
+
+- allocationDate
+- expectedReturnDate
+- actualReturnDate
+- assignedTo
+- notes
+- conditionBefore
+- conditionAfter
+
+Business Rules:
+
+1. Asset cannot be allocated twice.
+2. Allocated asset disappears from dropdown.
+3. If already allocated:
+
+Show:
+
+"Currently assigned to X"
+
+Provide:
+
+"Create Transfer Request"
+
+Transfer Workflow:
+
+Requested
+→ Approved
+→ Reassigned
+→ Completed
+
+Return Workflow:
+
+Returned
+→ Inspection
+→ Available
+
+Overdue assets:
+
+Automatically flagged.
+
+=========================================================
+MODULE 4
+RESOURCE BOOKING
+=========================================================
+
+Bookable Resources:
+
+- Rooms
+- Vehicles
+- Projectors
+- Equipment
+
+Create FullCalendar integration.
+
+Fields:
+
+- resource
+- bookedBy
+- department
+- purpose
+- startTime
+- endTime
+- status
+
+Booking Status:
+
+- Upcoming
+- Ongoing
+- Completed
+- Cancelled
+
+RULE:
+
+No overlapping bookings.
+
+Example:
+
+9-10 booked
+
+9:30-10:30 ❌
+
+10-11 ✅
+
+Features:
+
+- Cancel
+- Reschedule
+- Reminder Notifications
+
+=========================================================
+MODULE 5
+MAINTENANCE
+=========================================================
+
+Fields:
+
+- asset
+- issueDescription
+- priority
+- photos
+- requestedBy
+- technician
+- estimatedCost
+- actualCost
+
+Workflow:
+
+Pending
+→ Approved
+→ Technician Assigned
+→ In Progress
+→ Resolved
+
+Rules:
+
+On approval:
+
+asset.status = UNDER_MAINTENANCE
+
+On resolution:
+
+asset.status = AVAILABLE
+
+Maintain:
+
+- Maintenance History
+- Cost History
+
+=========================================================
+MODULE 6
+AUDIT MANAGEMENT
+=========================================================
+
+Features:
+
+- Create Audit Cycle
+- Assign Auditors
+- Verify Assets
+- Generate Reports
+
+Verification Status:
+
+- Verified
+- Missing
+- Damaged
+
+Rules:
+
+Missing Asset:
+
+asset.status = LOST
+
+Closed audits:
+
+Immutable.
+
+Generate discrepancy reports automatically.
+
+=========================================================
+MODULE 7
+NOTIFICATIONS
+=========================================================
+
+Realtime notifications.
+
+Examples:
+
+- Asset Assigned
+- Asset Returned
+- Transfer Approved
+- Booking Reminder
+- Maintenance Approved
+- Overdue Return
+- Audit Discrepancy
+
+Create:
+
+- Notification Center
+- Read/Unread
+- Notification Preferences
+
+=========================================================
+MODULE 8
+ACTIVITY LOGS
+=========================================================
+
+Track:
+
+- User
+- Action
+- Timestamp
+- Old Value
+- New Value
+- IP Address
+
+Create complete audit trail.
+
+=========================================================
+MODULE 9
+DASHBOARD
+=========================================================
+
+Create Odoo inspired dashboard.
+
+KPIs:
+
+- Total Assets
+- Available Assets
+- Allocated Assets
+- Assets Under Maintenance
+- Active Bookings
+- Upcoming Returns
+- Overdue Assets
+- Active Audits
+- Department Utilization
+- Maintenance Cost
+
+Charts:
+
+1. Asset Distribution
+2. Asset Utilization
+3. Maintenance Trends
+4. Booking Heatmap
+5. Allocation Trends
+6. Department Wise Assets
+7. Asset Lifecycle Distribution
+8. Idle Assets
+
+=========================================================
+REPORTS
+=========================================================
+
+Generate:
+
+- Asset Report
+- Allocation Report
+- Booking Report
+- Maintenance Report
+- Audit Report
+- Lost Assets Report
+- Department Summary
+
+Export:
+
+- CSV
+- Excel
+- PDF
+
+=========================================================
+GLOBAL FEATURES
+=========================================================
+
+Implement:
+
+- Global Search
+- Command Palette
+- Filters
+- Sorting
+- Pagination
+- Responsive Design
+- Dark Mode
+- Skeleton Loading
+- Empty States
+- Error Boundaries
+- Toast Notifications
+
+=========================================================
+DATABASE
+=========================================================
+
+Generate Prisma schema.
+
+Create tables:
+
+- users
+- roles
+- departments
+- employees
+- assetCategories
+- assets
+- allocations
+- transferRequests
+- bookings
+- maintenanceRequests
+- audits
+- auditItems
+- notifications
+- activityLogs
+- documents
+
+Use UUID everywhere.
+
+=========================================================
+PROJECT STRUCTURE
+=========================================================
+
+## Project Structure
+
+text
+assetflow/
+├── .env.local
+├── .env.example
+├── .gitignore
+├── next.config.js
+├── package.json
+├── tsconfig.json
+├── tailwind.config.ts
+├── postcss.config.js
+├── README.md
+├── prisma/
+|    ├── schema.prisma
+│    ├── seed.ts
+│    └── migrations/
+|
+├── public/
+|    ├── images/
+│    └── icons/
+├── src/
+│   ├── app/                            
+│   │   ├── layout.tsx
+│   │   ├── page.tsx                     
+│   │   ├── globals.css
+│   │   │
+│   │   ├── (auth)/                      
+│   │   │   ├── login/page.tsx
+│   │   │   ├── signup/page.tsx
+│   │   │   └── forgot-password/page.tsx
+│   │   │
+│   │   ├── (dashboard)/                 
+│   │   │   ├── layout.tsx               
+│   │   │   ├── dashboard/page.tsx       
+│   │   │   │
+│   │   │   ├── organization/            
+│   │   │   │   ├── layout.tsx           
+│   │   │   │   ├── departments/page.tsx
+│   │   │   │   ├── categories/page.tsx
+│   │   │   │   └── employees/page.tsx
+│   │   │   │
+│   │   │   ├── assets/                  
+│   │   │   │   ├── page.tsx             
+│   │   │   │   ├── new/page.tsx         
+│   │   │   │   └── [assetId]/page.tsx   
+│   │   │   │
+│   │   │   ├── allocations/page.tsx     
+│   │   │   ├── bookings/page.tsx        
+│   │   │   ├── maintenance/page.tsx     
+│   │   │   │
+│   │   │   ├── audits/                  
+│   │   │   │   ├── page.tsx             
+│   │   │   │   └── [auditId]/page.tsx   
+│   │   │   │
+│   │   │   ├── reports/page.tsx         
+│   │   │   └── notifications/page.tsx   
+│   │   │
+│   │   └── api/                         
+│   │       ├── auth/
+│   │       │   ├── login/route.ts
+│   │       │   ├── signup/route.ts      
+│   │       │   └── logout/route.ts
+│   │       ├── departments/
+│   │       │   ├── route.ts             
+│   │       │   └── [id]/route.ts        
+│   │       ├── categories/
+│   │       │   ├── route.ts
+│   │       │   └── [id]/route.ts
+│   │       ├── employees/
+│   │       │   ├── route.ts
+│   │       │   └── [id]/
+│   │       │       ├── route.ts
+│   │       │       └── promote/route.ts 
+│   │       ├── assets/
+│   │       │   ├── route.ts
+│   │       │   └── [id]/
+│   │       │       ├── route.ts
+│   │       │       └── history/route.ts
+│   │       ├── allocations/
+│   │       │   ├── route.ts             
+│   │       │   ├── [id]/
+│   │       │   │   ├── route.ts
+│   │       │   │   └── return/route.ts
+│   │       │   └── transfer/route.ts    
+│   │       ├── bookings/
+│   │       │   ├── route.ts             
+│   │       │   └── [id]/route.ts        
+│   │       ├── maintenance/
+│   │       │   ├── route.ts
+│   │       │   └── [id]/
+│   │       │       ├── route.ts
+│   │       │       └── status/route.ts  
+│   │       ├── audits/
+│   │       │   ├── route.ts
+│   │       │   └── [id]/
+│   │       │       ├── route.ts
+│   │       │       ├── verify/route.ts  
+│   │       │       └── close/route.ts
+│   │       ├── notifications/route.ts
+│   │       └── reports/route.ts
+│   │
+│   ├── components/
+│   │   ├── ui/                          
+│   │   ├── layout/                      
+│   │   ├── dashboard/                   
+│   │   ├── assets/                      
+│   │   ├── allocations/                 
+│   │   ├── bookings/                   
+│   │   ├── maintenance/                
+│   │   ├── audits/                      
+│   │   └── shared/
+|   |
+|   ├── lib/
+│   │   ├── db.ts                        
+│   │   ├── auth.ts                      
+│   │   ├── rbac.ts                      
+│   │   └── validators/                  
+│   │       ├── asset.schema.ts
+│   │       ├── booking.schema.ts
+│   │       ├── allocation.schema.ts
+│   │       └── maintenance.schema.ts  
+|   |
+|   ├── services/                         
+│   │   ├── asset.service.ts
+│   │   ├── allocation.service.ts         
+│   │   ├── booking.service.ts            
+│   │   ├── maintenance.service.ts        
+│   │   ├── audit.service.ts              
+│   │   └── notification.service.ts
+|   |
+|   ├── hooks/
+│   ├── store/
+│   ├── types/
+│   │   ├── enums.ts                     
+│   │   ├── asset.types.ts
+│   │   └── index.ts
+│   │
+│   └── middleware.ts 
+└── tests/
+
+=========================================================
+IMPLEMENTATION ORDER
+=========================================================
+
+Phase 1:
+Authentication
+RBAC
+Database
+
+Phase 2:
+Organization Setup
+
+Phase 3:
+Asset Management
+
+Phase 4:
+Allocation + Transfers
+
+Phase 5:
+Booking System
+
+Phase 6:
+Maintenance
+
+Phase 7:
+Audit Module
+
+Phase 8:
+Dashboard
+
+Phase 9:
+Notifications
+
+Phase 10:
+Reports
+
+=========================================================
+IMPORTANT
+=========================================================
+
+Generate:
+
+1. Prisma Schema
+2. Backend APIs
+3. Route Handlers
+4. React Pages
+5. Server Actions
+6. Reusable Components
+7. Zustand Stores
+8. RBAC Middleware
+9. Seed Data
+10. Docker Setup
+11. Environment Variables
+12. Production Ready Code
+
+Do NOT generate documentation.
+
+Start implementing immediately.
+
+Do not ask for confirmation.
+
+Continue module by module until the entire application is completed.
