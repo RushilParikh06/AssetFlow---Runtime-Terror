@@ -1,4 +1,4 @@
-import { PrismaClient, Role, AssetStatus } from "@prisma/client"
+import { PrismaClient, Role, AssetStatus, VerificationStatus } from "@prisma/client"
 import bcrypt from "bcryptjs"
 
 const prisma = new PrismaClient()
@@ -337,7 +337,7 @@ async function main() {
   console.log("Assets created.")
 
   // 7. Create an Allocation (For Dell XPS, currently assigned to John Doe)
-  await prisma.allocation.create({
+  const allocation = await prisma.allocation.create({
     data: {
       assetId: asset2.id,
       assignedToId: normalEmp.id,
@@ -349,7 +349,115 @@ async function main() {
     }
   })
 
-  // 8. Create an ActivityLog entry for seeding
+  // 8. Create a TransferRequest
+  await prisma.transferRequest.create({
+    data: {
+      assetId: asset2.id,
+      requestedById: managerEmp.id,
+      targetEmployeeId: normalEmp.id,
+      status: "REQUESTED",
+      notes: "Need this unit transferred to John Doe in IT permanently."
+    }
+  })
+
+  // 9. Create Bookings (Tesla Model 3, Epson Projector)
+  await prisma.booking.create({
+    data: {
+      resourceId: asset4.id,
+      bookedById: normalEmp.id,
+      startTime: new Date("2026-08-15T09:00:00Z"),
+      endTime: new Date("2026-08-15T12:00:00Z"),
+      purpose: "Client site visit",
+      status: "UPCOMING"
+    }
+  })
+
+  await prisma.booking.create({
+    data: {
+      resourceId: asset5.id,
+      bookedById: headEmp.id,
+      startTime: new Date("2026-08-16T14:00:00Z"),
+      endTime: new Date("2026-08-16T16:00:00Z"),
+      purpose: "All Hands Presentation",
+      status: "UPCOMING"
+    }
+  })
+
+  // 10. Create Maintenance Requests
+  await prisma.maintenanceRequest.create({
+    data: {
+      assetId: asset3.id,
+      requestedById: normalEmp.id,
+      issueDescription: "Squeaking base mechanism and loose hydraulic cylinder",
+      priority: "MEDIUM",
+      status: "PENDING",
+      estimatedCost: 80.00
+    }
+  })
+
+  await prisma.maintenanceRequest.create({
+    data: {
+      assetId: asset1.id,
+      requestedById: headEmp.id,
+      issueDescription: "Battery swelling and rapid discharge warning",
+      priority: "HIGH",
+      status: "APPROVED",
+      estimatedCost: 350.00
+    }
+  })
+
+  // 11. Create Audit Cycle
+  const auditCycle = await prisma.audit.create({
+    data: {
+      name: "Q3 Physical Inventory Count",
+      description: "Mandatory compliance physical check for IT equipment and furniture assets.",
+      status: "ACTIVE",
+      startDate: new Date("2026-07-01"),
+      endDate: new Date("2026-07-31")
+    }
+  })
+
+  // Link assets to the Audit Cycle
+  await prisma.auditItem.create({
+    data: {
+      auditId: auditCycle.id,
+      assetId: asset1.id,
+      status: VerificationStatus.MISSING
+    }
+  })
+
+  await prisma.auditItem.create({
+    data: {
+      auditId: auditCycle.id,
+      assetId: asset2.id,
+      status: VerificationStatus.VERIFIED,
+      verifiedById: auditorEmp.id,
+      notes: "Serial match verified, condition matches logs."
+    }
+  })
+
+  // 12. Create Notifications
+  await prisma.notification.create({
+    data: {
+      userId: normalEmp.userId!,
+      title: "Upcoming Return Notice",
+      message: `Your allocation for ${asset2.assetName} is due in 3 days.`,
+      type: "ALERT",
+      read: false
+    }
+  })
+
+  await prisma.notification.create({
+    data: {
+      userId: adminEmp.userId!,
+      title: "New Maintenance Request",
+      message: `A new maintenance ticket has been raised for ${asset3.assetName}.`,
+      type: "ALERT",
+      read: false
+    }
+  })
+
+  // 13. Create ActivityLog entry for seeding
   await prisma.activityLog.create({
     data: {
       action: "DB_SEED",

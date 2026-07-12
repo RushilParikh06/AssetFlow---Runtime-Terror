@@ -48,8 +48,8 @@ export default auth((req) => {
     
     // Audits page requires ADMIN, AUDITOR, or ASSET_MANAGER
     if (nextUrl.pathname.startsWith("/audits")) {
-      const allowed: Role[] = [Role.ADMIN, Role.AUDITOR, Role.ASSET_MANAGER]
-      if (!allowed.includes(role as Role)) {
+      const allowed = [Role.ADMIN, Role.AUDITOR, Role.ASSET_MANAGER]
+      if (!allowed.includes(role)) {
         return NextResponse.redirect(new URL("/screen-3", nextUrl))
       }
     }
