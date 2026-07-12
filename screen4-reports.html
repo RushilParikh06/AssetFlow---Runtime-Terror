@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AssetFlow — Reports & Analytics</title>
+  <meta name="description" content="AssetFlow Reports & Analytics — Asset utilization, maintenance frequency, most-used and idle assets, booking heatmap." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #09090b;
+      --sidebar-bg:   #0d0d10;
+      --card-bg:      #111114;
+      --card-border:  rgba(255,255,255,0.07);
+      --hover-border: rgba(255,255,255,0.14);
+      --text-1:       #f4f4f5;
+      --text-2:       #a1a1aa;
+      --text-3:       #52525b;
+      --accent:       #6366f1;       /* indigo */
+      --accent-dim:   rgba(99,102,241,0.12);
+      --green:        #22c55e;
+      --green-dim:    rgba(34,197,94,0.12);
+      --amber:        #f59e0b;
+      --amber-dim:    rgba(245,158,11,0.12);
+      --red:          #ef4444;
+      --red-dim:      rgba(239,68,68,0.12);
+      --blue:         #60a5fa;
+      --blue-dim:     rgba(96,165,250,0.12);
+      --violet:       #a78bfa;
+      --sidebar-w:    256px;
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text-1);
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ═══════════════════════════════════════
+       SIDEBAR
+    ═══════════════════════════════════════ */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--card-border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 40;
+    }
+
+    .sidebar-brand {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--card-border);
+      flex-shrink: 0;
+    }
+
+    .brand-icon {
+      width: 34px; height: 34px;
+      background: #fff;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: #000;
+    }
+
+    .brand-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-1);
+      letter-spacing: -0.3px;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 12px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow-y: auto;
+    }
+
+    .nav-section-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--text-3);
+      padding: 10px 10px 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      text-decoration: none;
+      position: relative;
+    }
+
+    .nav-item:hover { background: rgba(255,255,255,0.04); color: var(--text-1); }
+
+    .nav-item.active {
+      background: rgba(99,102,241,0.1);
+      color: var(--text-1);
+    }
+
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 50%;
+      transform: translateY(-50%);
+      width: 3px; height: 20px;
+      background: var(--accent);
+      border-radius: 0 3px 3px 0;
+    }
+
+    .nav-icon {
+      width: 18px; height: 18px;
+      opacity: 0.7;
+      flex-shrink: 0;
+    }
+    .nav-item.active .nav-icon { opacity: 1; color: var(--accent); }
+
+    .sidebar-footer {
+      border-top: 1px solid var(--card-border);
+      padding: 12px 10px;
+    }
+
+    .user-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .user-row:hover { background: rgba(255,255,255,0.04); }
+
+    .avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--violet));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .user-info { flex: 1; min-width: 0; }
+    .user-name { font-size: 13px; font-weight: 600; color: var(--text-1); }
+    .user-role { font-size: 11px; color: var(--text-3); }
+
+    /* ═══════════════════════════════════════
+       MAIN
+    ═══════════════════════════════════════ */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .topbar {
+      height: 60px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      position: sticky;
+      top: 0;
+      background: rgba(9,9,11,0.85);
+      backdrop-filter: blur(16px);
+      z-index: 30;
+      flex-shrink: 0;
+    }
+
+    .topbar-left { display: flex; align-items: center; gap: 16px; }
+
+    .page-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-1);
+      letter-spacing: -0.2px;
+    }
+
+    .date-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-2);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 4px 10px;
+    }
+
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      width: 180px;
+    }
+
+    .search-box input {
+      background: none;
+      border: none;
+      outline: none;
+      font-size: 13px;
+      color: var(--text-1);
+      font-family: inherit;
+      width: 100%;
+    }
+    .search-box input::placeholder { color: var(--text-3); }
+
+    .icon-btn {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      background: rgba(255,255,255,0.03);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-2);
+      position: relative;
+      transition: background 0.15s, color 0.15s;
+    }
+    .icon-btn:hover { background: rgba(255,255,255,0.07); color: var(--text-1); }
+
+    .notif-dot {
+      position: absolute;
+      top: 6px; right: 6px;
+      width: 7px; height: 7px;
+      background: var(--accent);
+      border-radius: 50%;
+      border: 1.5px solid var(--bg);
+    }
+
+    .export-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.15s;
+    }
+    .export-btn:hover { opacity: 0.85; }
+
+    /* Content */
+    .content { padding: 28px; display: flex; flex-direction: column; gap: 24px; }
+
+    /* ─── KPI CARDS ─── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .kpi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.2s;
+      cursor: default;
+    }
+
+    .kpi-card:hover { border-color: var(--hover-border); transform: translateY(-2px); }
+
+    .kpi-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--accent-dim), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .kpi-card:hover::after { opacity: 1; }
+
+    .kpi-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; position: relative; z-index: 1; }
+
+    .kpi-label { font-size: 12.5px; font-weight: 500; color: var(--text-2); }
+
+    .kpi-icon {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .kpi-card:hover .kpi-icon { background: var(--accent-dim); border-color: rgba(99,102,241,0.25); }
+
+    .kpi-value {
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--text-1);
+      letter-spacing: -1px;
+      line-height: 1;
+      position: relative; z-index: 1;
+    }
+
+    .kpi-delta {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-top: 6px;
+      position: relative; z-index: 1;
+    }
+    .kpi-delta.up { color: var(--green); }
+    .kpi-delta.down { color: var(--red); }
+    .kpi-delta.neutral { color: var(--text-2); }
+
+    /* ─── CHART ROW ─── */
+    .chart-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 22px;
+      transition: border-color 0.2s;
+    }
+    .card:hover { border-color: var(--hover-border); }
+
+    .card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+    .card-title { font-size: 14px; font-weight: 600; color: var(--text-1); }
+    .card-sub { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+
+    .legend { display: flex; gap: 16px; align-items: center; }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-2); }
+    .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    /* SVG bar chart */
+    .chart-wrap { width: 100%; overflow: hidden; }
+
+    .bar-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      height: 180px;
+      position: relative;
+      padding-bottom: 28px;
+    }
+
+    .bar-chart::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      bottom: 28px;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent calc(25% - 1px),
+        rgba(255,255,255,0.04) calc(25% - 1px),
+        rgba(255,255,255,0.04) 25%
+      );
+      pointer-events: none;
+    }
+
+    .bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+
+    .bar-pair { display: flex; align-items: flex-end; gap: 3px; flex-shrink: 0; }
+
+    .bar {
+      width: 14px;
+      border-radius: 4px 4px 0 0;
+      transition: opacity 0.2s;
+    }
+    .bar:hover { opacity: 0.7; }
+
+    .bar-label { font-size: 10.5px; color: var(--text-3); margin-top: 2px; white-space: nowrap; }
+
+    /* Line chart (SVG) */
+    .line-chart-wrap { position: relative; }
+    .line-chart-wrap svg { width: 100%; display: block; }
+
+    /* Pipeline-style progress bars */
+    .prog-list { display: flex; flex-direction: column; gap: 14px; }
+
+    .prog-item { }
+    .prog-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .prog-name { font-size: 13px; font-weight: 500; color: var(--text-1); }
+    .prog-meta { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+    .prog-count { color: var(--text-2); }
+    .prog-pct { font-weight: 600; color: var(--text-1); }
+    .prog-track { height: 7px; background: rgba(255,255,255,0.06); border-radius: 999px; overflow: hidden; }
+    .prog-fill { height: 100%; border-radius: 999px; transition: width 1s ease; }
+
+    /* ─── BOTTOM ROW ─── */
+    .bottom-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    /* Table */
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-3);
+      padding: 8px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .data-table td {
+      font-size: 13px;
+      color: var(--text-2);
+      padding: 11px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: rgba(255,255,255,0.02); color: var(--text-1); }
+
+    .asset-name { font-weight: 500; color: var(--text-1); }
+    .asset-id { font-size: 11px; color: var(--text-3); }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 500;
+    }
+    .badge.green  { background: var(--green-dim);  color: var(--green); }
+    .badge.amber  { background: var(--amber-dim);  color: var(--amber); }
+    .badge.red    { background: var(--red-dim);    color: var(--red); }
+    .badge.blue   { background: var(--blue-dim);   color: var(--blue); }
+    .badge.violet { background: rgba(167,139,250,0.12); color: var(--violet); }
+
+    /* Heatmap */
+    .heatmap-grid {
+      display: grid;
+      grid-template-columns: 60px repeat(7, 1fr);
+      gap: 4px;
+    }
+
+    .hm-label {
+      font-size: 11px;
+      color: var(--text-3);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 8px;
+    }
+    .hm-day-label { font-size: 11px; color: var(--text-3); text-align: center; padding-bottom: 4px; }
+    .hm-cell {
+      height: 28px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.15s;
+      position: relative;
+    }
+    .hm-cell:hover { opacity: 0.75; transform: scale(1.08); }
+
+    .hm-cell[title]:hover::after {
+      content: attr(title);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1f1f23;
+      border: 1px solid var(--card-border);
+      color: var(--text-1);
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    /* Idle asset spotlight */
+    .idle-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .idle-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--card-border);
+      transition: border-color 0.2s;
+      cursor: default;
+    }
+    .idle-item:hover { border-color: var(--hover-border); }
+
+    .idle-left { display: flex; align-items: center; gap: 10px; }
+    .idle-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--red);
+      flex-shrink: 0;
+    }
+    .idle-asset-name { font-size: 13px; font-weight: 500; color: var(--text-1); }
+    .idle-dept { font-size: 11.5px; color: var(--text-3); margin-top: 1px; }
+    .idle-days { font-size: 12px; font-weight: 600; color: var(--amber); }
+
+    /* ─── REPORT SUMMARY BANNER ─── */
+    .report-banner {
+      background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(167,139,250,0.06));
+      border: 1px solid rgba(99,102,241,0.2);
+      border-radius: 14px;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .banner-left h3 { font-size: 14px; font-weight: 600; color: var(--text-1); margin-bottom: 4px; }
+    .banner-left p  { font-size: 13px; color: var(--text-2); }
+
+    .generate-btn {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      padding: 9px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+      transition: opacity 0.15s;
+      flex-shrink: 0;
+    }
+    .generate-btn:hover { opacity: 0.85; }
+
+    /* ─── SCROLLBAR ─── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════
+       SIDEBAR
+  ═══════════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">AF</div>
+      <span class="brand-name">AssetFlow</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+        Dashboard
+      </a>
+
+      <div class="nav-section-label">Management</div>
+
+      <a href="#" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+        Organization
+      </a>
+      <a href="#" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        Assets
+      </a>
+      <a href="#" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+        Allocation &amp; Transfer
+      </a>
+      <a href="#" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        Resource Booking
+      </a>
+      <a href="#" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z"/></svg>
+        Maintenance
+      </a>
+      <a href="#" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Audits
+      </a>
+
+      <div class="nav-section-label">Insights</div>
+
+      <a href="#" class="nav-item active">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+        Reports &amp; Analytics
+      </a>
+      <a href="#" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        Notifications
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-row">
+        <div class="avatar">AD</div>
+        <div class="user-info">
+          <div class="user-name">Alex D'Silva</div>
+          <div class="user-role">Admin</div>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-3);flex-shrink:0"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══════════════════════════════════
+       MAIN
+  ═══════════════════════════════════ -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="page-title">Reports &amp; Analytics</h1>
+        <div class="date-badge">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          Last 30 days
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="search-box">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-3);flex-shrink:0"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" placeholder="Search reports…" id="search-reports" />
+        </div>
+        <button class="icon-btn" title="Notifications" id="notif-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          <span class="notif-dot"></span>
+        </button>
+        <button class="export-btn" id="export-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export Report
+        </button>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- Report Banner -->
+      <div class="report-banner">
+        <div class="banner-left">
+          <h3>Auto-generated Discrepancy Report Ready</h3>
+          <p>3 assets flagged for follow-up · Laptop AF-0021 &amp; 2 others show location mismatch</p>
+        </div>
+        <button class="generate-btn" id="view-report-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          View Full Report
+        </button>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid">
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Total Assets</span>
+            <div class="kpi-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-2)"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value">2,418</div>
+          <div class="kpi-delta up">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+            +43 this month
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Utilization Rate</span>
+            <div class="kpi-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-2)"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value">74<span style="font-size:18px;letter-spacing:0">%</span></div>
+          <div class="kpi-delta up">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+            +6.2% vs last month
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Maintenance Events</span>
+            <div class="kpi-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-2)"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value">38</div>
+          <div class="kpi-delta down">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>
+            -4 vs last month
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Idle Assets</span>
+            <div class="kpi-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-2)"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value">127</div>
+          <div class="kpi-delta neutral">
+            No change vs last month
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Chart Row: Bar + Progress -->
+      <div class="chart-row">
+
+        <!-- Utilization by Department (bar chart) -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Asset Utilization by Department</div>
+              <div class="card-sub">Allocated vs Available across teams</div>
+            </div>
+            <div class="legend">
+              <div class="legend-item"><div class="legend-dot" style="background:#6366f1"></div>Allocated</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Available</div>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <div class="bar-chart" id="bar-chart">
+              <!-- JS generated -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Utilization breakdown progress -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Status Breakdown</div>
+              <div class="card-sub">All 2,418 assets</div>
+            </div>
+          </div>
+          <div class="prog-list">
+            <div class="prog-item">
+              <div class="prog-top">
+                <span class="prog-name">Allocated</span>
+                <div class="prog-meta">
+                  <span class="prog-count">1,143</span>
+                  <span class="prog-pct">47%</span>
+                </div>
+              </div>
+              <div class="prog-track">
+                <div class="prog-fill" style="width:0%;background:#6366f1" data-target="47"></div>
+              </div>
+            </div>
+            <div class="prog-item">
+              <div class="prog-top">
+                <span class="prog-name">Available</span>
+                <div class="prog-meta">
+                  <span class="prog-count">654</span>
+                  <span class="prog-pct">27%</span>
+                </div>
+              </div>
+              <div class="prog-track">
+                <div class="prog-fill" style="width:0%;background:#22c55e" data-target="27"></div>
+              </div>
+            </div>
+            <div class="prog-item">
+              <div class="prog-top">
+                <span class="prog-name">Idle (&gt;30 days)</span>
+                <div class="prog-meta">
+                  <span class="prog-count">364</span>
+                  <span class="prog-pct">15%</span>
+                </div>
+              </div>
+              <div class="prog-track">
+                <div class="prog-fill" style="width:0%;background:#f59e0b" data-target="15"></div>
+              </div>
+            </div>
+            <div class="prog-item">
+              <div class="prog-top">
+                <span class="prog-name">Under Maintenance</span>
+                <div class="prog-meta">
+                  <span class="prog-count">145</span>
+                  <span class="prog-pct">6%</span>
+                </div>
+              </div>
+              <div class="prog-track">
+                <div class="prog-fill" style="width:0%;background:#60a5fa" data-target="6"></div>
+              </div>
+            </div>
+            <div class="prog-item">
+              <div class="prog-top">
+                <span class="prog-name">Reserved / Booked</span>
+                <div class="prog-meta">
+                  <span class="prog-count">112</span>
+                  <span class="prog-pct">5%</span>
+                </div>
+              </div>
+              <div class="prog-track">
+                <div class="prog-fill" style="width:0%;background:#a78bfa" data-target="5"></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--card-border);display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:12px;color:var(--text-2)">Total Asset Value</span>
+            <span style="font-size:18px;font-weight:700;color:var(--text-1);letter-spacing:-0.5px">₹4.8Cr</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Row: Most Used + Booking Heatmap -->
+      <div class="bottom-row">
+
+        <!-- Most Used / Idle Asset Table -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Most Used Assets</div>
+              <div class="card-sub">By allocation &amp; booking frequency this month</div>
+            </div>
+            <a href="#" style="font-size:12px;color:var(--accent);text-decoration:none;font-weight:500">View all →</a>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Asset</th>
+                <th>Department</th>
+                <th>Uses</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><div class="asset-name">MacBook Pro 16"</div><div class="asset-id">AF-1042</div></td>
+                <td>Engineering</td>
+                <td style="font-weight:600;color:var(--text-1)">28</td>
+                <td><span class="badge violet">Allocated</span></td>
+              </tr>
+              <tr>
+                <td><div class="asset-name">Projector BenQ</div><div class="asset-id">AF-0318</div></td>
+                <td>Facilities</td>
+                <td style="font-weight:600;color:var(--text-1)">22</td>
+                <td><span class="badge blue">Reserved</span></td>
+              </tr>
+              <tr>
+                <td><div class="asset-name">Dell XPS 15</div><div class="asset-id">AF-0754</div></td>
+                <td>Design</td>
+                <td style="font-weight:600;color:var(--text-1)">19</td>
+                <td><span class="badge green">Available</span></td>
+              </tr>
+              <tr>
+                <td><div class="asset-name">Forklift F-2</div><div class="asset-id">AF-2201</div></td>
+                <td>Warehouse</td>
+                <td style="font-weight:600;color:var(--text-1)">17</td>
+                <td><span class="badge violet">Allocated</span></td>
+              </tr>
+              <tr>
+                <td><div class="asset-name">HP LaserJet Pro</div><div class="asset-id">AF-0099</div></td>
+                <td>HR</td>
+                <td style="font-weight:600;color:var(--text-1)">14</td>
+                <td><span class="badge amber">Maintenance</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Booking Heatmap -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Booking Heatmap</div>
+              <div class="card-sub">Demand by day of week &amp; hour (last 4 weeks)</div>
+            </div>
+            <div class="legend">
+              <div class="legend-item"><div class="legend-dot" style="background:#1e1e2a"></div>Low</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#6366f1"></div>High</div>
+            </div>
+          </div>
+          <div class="heatmap-grid" id="heatmap">
+            <!-- JS generated -->
+          </div>
+          <div style="margin-top:16px;font-size:11.5px;color:var(--text-3)">
+            Peak booking window: <strong style="color:var(--accent)">Mon–Wed, 9 AM – 12 PM</strong>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Idle Assets -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Idle Assets — Due for Review / Retirement</div>
+            <div class="card-sub">Assets with 0 activity for &gt;30 days · 127 total flagged</div>
+          </div>
+          <button class="generate-btn" style="padding:7px 14px;font-size:12.5px;" id="flag-all-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+            Flag for Review
+          </button>
+        </div>
+        <div class="idle-list">
+          <div class="idle-item">
+            <div class="idle-left">
+              <div class="idle-dot"></div>
+              <div>
+                <div class="idle-asset-name">Office Chair (Set of 12) — AF-0887</div>
+                <div class="idle-dept">Facilities · Last used: Jun 2, 2025</div>
+              </div>
+            </div>
+            <span class="idle-days">62 days idle</span>
+          </div>
+          <div class="idle-item">
+            <div class="idle-left">
+              <div class="idle-dot"></div>
+              <div>
+                <div class="idle-asset-name">Canon DSLR Camera — AF-1120</div>
+                <div class="idle-dept">Marketing · Last used: Jun 8, 2025</div>
+              </div>
+            </div>
+            <span class="idle-days">56 days idle</span>
+          </div>
+          <div class="idle-item">
+            <div class="idle-left">
+              <div class="idle-dot" style="background:var(--amber)"></div>
+              <div>
+                <div class="idle-asset-name">Lenovo ThinkPad — AF-0443</div>
+                <div class="idle-dept">Finance · Last used: Jun 15, 2025</div>
+              </div>
+            </div>
+            <span class="idle-days">49 days idle</span>
+          </div>
+          <div class="idle-item">
+            <div class="idle-left">
+              <div class="idle-dot" style="background:var(--amber)"></div>
+              <div>
+                <div class="idle-asset-name">Projector Screen — AF-0231</div>
+                <div class="idle-dept">Training · Last used: Jun 20, 2025</div>
+              </div>
+            </div>
+            <span class="idle-days">44 days idle</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </main>
+
+  <script>
+    /* ═══════════════════════════════
+       BAR CHART — Utilization by Dept
+    ═══════════════════════════════ */
+    const depts = [
+      { name: 'Eng', alloc: 82, avail: 18 },
+      { name: 'Design', alloc: 68, avail: 32 },
+      { name: 'HR', alloc: 55, avail: 45 },
+      { name: 'Finance', alloc: 60, avail: 40 },
+      { name: 'Ops', alloc: 75, avail: 25 },
+      { name: 'Mktg', alloc: 48, avail: 52 },
+      { name: 'Ware', alloc: 90, avail: 10 },
+    ];
+
+    const chartEl = document.getElementById('bar-chart');
+    depts.forEach(d => {
+      const group = document.createElement('div');
+      group.className = 'bar-group';
+
+      const pair = document.createElement('div');
+      pair.className = 'bar-pair';
+
+      const b1 = document.createElement('div');
+      b1.className = 'bar';
+      b1.style.cssText = `height:0;background:#6366f1;`;
+      b1.title = `${d.name} — Allocated: ${d.alloc}%`;
+
+      const b2 = document.createElement('div');
+      b2.className = 'bar';
+      b2.style.cssText = `height:0;background:#22c55e;`;
+      b2.title = `${d.name} — Available: ${d.avail}%`;
+
+      pair.append(b1, b2);
+
+      const lbl = document.createElement('div');
+      lbl.className = 'bar-label';
+      lbl.textContent = d.name;
+
+      group.append(pair, lbl);
+      chartEl.appendChild(group);
+
+      // animate in
+      setTimeout(() => {
+        const maxH = 150; // max px height
+        b1.style.transition = 'height 0.8s ease';
+        b1.style.height = (d.alloc / 100 * maxH) + 'px';
+        b2.style.transition = 'height 0.8s ease 0.1s';
+        b2.style.height = (d.avail / 100 * maxH) + 'px';
+      }, 100);
+    });
+
+    /* ═══════════════════════════════
+       PROGRESS BARS ANIMATION
+    ═══════════════════════════════ */
+    setTimeout(() => {
+      document.querySelectorAll('.prog-fill[data-target]').forEach(el => {
+        el.style.transition = 'width 1s ease';
+        el.style.width = el.dataset.target + '%';
+      });
+    }, 200);
+
+    /* ═══════════════════════════════
+       BOOKING HEATMAP
+    ═══════════════════════════════ */
+    const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    const hours = ['8AM','9AM','10AM','11AM','12PM','1PM','2PM','3PM','4PM','5PM'];
+
+    // intensity data [hour][day] 0-10
+    const data = [
+      [2,4,3,2,1,0,0],
+      [5,8,8,6,5,1,0],
+      [6,9,10,7,6,2,0],
+      [5,8,9,7,5,2,1],
+      [4,6,7,5,4,1,0],
+      [3,5,6,4,3,1,0],
+      [3,5,5,4,3,1,0],
+      [2,4,4,3,2,1,0],
+      [2,3,3,2,2,0,0],
+      [1,2,2,1,1,0,0],
+    ];
+
+    const hm = document.getElementById('heatmap');
+
+    // Day labels row
+    const emptyCorner = document.createElement('div');
+    hm.appendChild(emptyCorner);
+    days.forEach(d => {
+      const lbl = document.createElement('div');
+      lbl.className = 'hm-day-label';
+      lbl.textContent = d;
+      hm.appendChild(lbl);
+    });
+
+    // Data rows
+    hours.forEach((hr, hi) => {
+      const rowLbl = document.createElement('div');
+      rowLbl.className = 'hm-label';
+      rowLbl.textContent = hr;
+      hm.appendChild(rowLbl);
+
+      days.forEach((_, di) => {
+        const val = data[hi][di];
+        const cell = document.createElement('div');
+        cell.className = 'hm-cell';
+        const alpha = val / 10;
+        // interpolate from dark to accent
+        if (val === 0) {
+          cell.style.background = 'rgba(255,255,255,0.03)';
+        } else {
+          cell.style.background = `rgba(99,102,241,${0.1 + alpha * 0.9})`;
+        }
+        cell.title = `${days[di]} ${hr}: ${val * 12} bookings`;
+        hm.appendChild(cell);
+      });
+    });
+
+    /* ═══════════════════════════════
+       Button interactions
+    ═══════════════════════════════ */
+    document.getElementById('export-btn').addEventListener('click', () => {
+      const btn = document.getElementById('export-btn');
+      btn.textContent = '✓ Exported!';
+      btn.style.background = '#22c55e';
+      setTimeout(() => {
+        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export Report`;
+        btn.style.background = '';
+      }, 2000);
+    });
+
+    document.getElementById('flag-all-btn').addEventListener('click', () => {
+      document.querySelectorAll('.idle-dot').forEach(d => d.style.background = '#ef4444');
+      document.getElementById('flag-all-btn').textContent = '✓ Flagged for Review';
+    });
+  </script>
+</body>
+</html>

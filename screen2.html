@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AssetFlow — Sign In</title>
+  <meta name="description" content="Sign in to AssetFlow — the modern enterprise asset management platform." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #000000;
+      --bg-card: #0f0f0f;
+      --bg-card2: #141414;
+      --bg-input: rgba(255,255,255,0.04);
+      --border: rgba(255,255,255,0.08);
+      --border-hover: rgba(255,255,255,0.15);
+      --border-focus: rgba(255,255,255,0.25);
+      --text-primary: #ffffff;
+      --text-secondary: #888888;
+      --text-muted: #555555;
+      --accent-green: #22c55e;
+      --accent-blue: #60a5fa;
+      --accent-violet: #a78bfa;
+      --accent-red: #f87171;
+      --error-bg: rgba(248,113,113,0.08);
+      --error-border: rgba(248,113,113,0.25);
+      --success-bg: rgba(34,197,94,0.08);
+      --success-border: rgba(34,197,94,0.25);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: 'Inter', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ─── BACKGROUND ─── */
+    .auth-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .auth-bg::before {
+      content: '';
+      position: absolute;
+      top: 20%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 800px;
+      height: 600px;
+      background: radial-gradient(ellipse at center, rgba(100,100,100,0.1) 0%, transparent 70%);
+    }
+
+    .auth-bg::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 40%;
+      background: radial-gradient(ellipse at bottom center, rgba(96,165,250,0.04) 0%, transparent 60%);
+    }
+
+    /* ─── TOP NAV ─── */
+    .auth-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 32px;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .nav-logo {
+      width: 34px;
+      height: 34px;
+      background: #ffffff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      color: #000;
+      letter-spacing: -0.5px;
+    }
+
+    .nav-brand-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.3px;
+    }
+
+    .nav-back {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .nav-back:hover {
+      color: var(--text-primary);
+      border-color: var(--border-hover);
+    }
+
+    /* ─── LAYOUT ─── */
+    .auth-page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 100px 24px 48px;
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(15,15,15,0.9);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px 36px;
+      animation: fadeInUp 0.5s ease both;
+    }
+
+    .auth-card.wide {
+      max-width: 480px;
+    }
+
+    /* ─── HEADER ─── */
+    .auth-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .auth-avatar {
+      width: 64px;
+      height: 64px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin: 0 auto 20px;
+      letter-spacing: -0.5px;
+    }
+
+    .auth-header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .auth-header p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .auth-header p span {
+      color: var(--accent-blue);
+    }
+
+    /* ─── FORM ─── */
+    .auth-form {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .form-group label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .form-group label .optional {
+      font-weight: 400;
+      color: var(--text-muted);
+    }
+
+    .form-input {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--text-primary);
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+
+    .form-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .form-input:hover {
+      border-color: var(--border-hover);
+    }
+
+    .form-input:focus {
+      border-color: var(--border-focus);
+      background: rgba(255,255,255,0.06);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.04);
+    }
+
+    .form-input.error {
+      border-color: var(--error-border);
+      background: var(--error-bg);
+    }
+
+    .form-error {
+      font-size: 12px;
+      color: var(--accent-red);
+      display: none;
+    }
+
+    .form-group.has-error .form-error {
+      display: block;
+    }
+
+    /* ─── PASSWORD FIELD ─── */
+    .password-wrap {
+      position: relative;
+    }
+
+    .password-wrap .form-input {
+      padding-right: 48px;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      font-size: 16px;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+
+    .toggle-password:hover {
+      color: var(--text-secondary);
+    }
+
+    /* ─── FORM ROW ─── */
+    .form-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .form-link {
+      font-size: 13px;
+      color: var(--accent-blue);
+      text-decoration: none;
+      font-weight: 500;
+      transition: opacity 0.2s;
+    }
+
+    .form-link:hover {
+      opacity: 0.8;
+    }
+
+    /* ─── SELECT ─── */
+    .form-select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23555555' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      padding-right: 40px;
+      cursor: pointer;
+    }
+
+    /* ─── BUTTONS ─── */
+    .btn-primary {
+      width: 100%;
+      background: var(--text-primary);
+      color: #000;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 13px 24px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.2s, transform 0.15s;
+      margin-top: 4px;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.88;
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      width: 100%;
+      background: transparent;
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-1px);
+    }
+
+    /* ─── DIVIDER ─── */
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 28px 0;
+    }
+
+    .auth-divider::before,
+    .auth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .auth-divider span {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* ─── INFO CARD ─── */
+    .info-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .info-card h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .info-card p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    /* ─── SUCCESS STATE ─── */
+    .success-icon {
+      width: 64px;
+      height: 64px;
+      background: var(--success-bg);
+      border: 1px solid var(--success-border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin: 0 auto 20px;
+    }
+
+    .success-note {
+      background: rgba(96,165,250,0.06);
+      border: 1px solid rgba(96,165,250,0.15);
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    .success-note strong {
+      color: var(--accent-blue);
+      font-weight: 600;
+    }
+
+    /* ─── VIEWS ─── */
+    .auth-view {
+      display: none;
+    }
+
+    .auth-view.active {
+      display: block;
+    }
+
+    /* ─── FOOTER LINK ─── */
+    .auth-footer-link {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .auth-footer-link a {
+      color: var(--accent-blue);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .auth-footer-link a:hover {
+      opacity: 0.8;
+    }
+
+    /* ─── ROLE BADGE ─── */
+    .role-note {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 480px) {
+      .auth-card {
+        padding: 32px 24px;
+        border-radius: 20px;
+      }
+
+      .auth-nav {
+        padding: 16px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="auth-bg"></div>
+
+  <!-- ─── NAV ─── -->
+  <header class="auth-nav">
+    <a href="screen1.html" class="nav-brand">
+      <div class="nav-logo">AF</div>
+      <span class="nav-brand-name">AssetFlow</span>
+    </a>
+    <a href="screen1.html" class="nav-back">&larr; Back to home</a>
+  </header>
+
+  <main class="auth-page">
+
+    <!-- ═══ LOGIN ═══ -->
+    <div class="auth-card auth-view active" id="view-login">
+      <div class="auth-header">
+        <div class="auth-avatar">AF</div>
+        <h1>Welcome back</h1>
+        <p>Sign in to your <span>AssetFlow</span> account</p>
+      </div>
+
+      <form class="auth-form" id="login-form" novalidate>
+        <div class="form-group" id="login-email-group">
+          <label for="login-email">Email address</label>
+          <input type="email" id="login-email" class="form-input" placeholder="you@company.com" autocomplete="email" />
+          <span class="form-error">Please enter a valid email address</span>
+        </div>
+
+        <div class="form-group" id="login-password-group">
+          <label for="login-password">Password</label>
+          <div class="password-wrap">
+            <input type="password" id="login-password" class="form-input" placeholder="Enter your password" autocomplete="current-password" />
+            <button type="button" class="toggle-password" data-target="login-password" aria-label="Toggle password visibility">&#128065;</button>
+          </div>
+          <span class="form-error">Password is required</span>
+        </div>
+
+        <div class="form-row">
+          <span></span>
+          <a href="#" class="form-link" data-view="forgot">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn-primary">Sign In</button>
+      </form>
+
+      <div class="auth-divider"><span>or</span></div>
+
+      <div class="info-card">
+        <h3>New here?</h3>
+        <p>Create an account to start managing your organization's assets in minutes.</p>
+        <button type="button" class="btn-secondary" data-view="signup">Create Account</button>
+      </div>
+    </div>
+
+    <!-- ═══ SIGNUP ═══ -->
+    <div class="auth-card wide auth-view" id="view-signup">
+      <div class="auth-header">
+        <div class="auth-avatar">+</div>
+        <h1>Create your account</h1>
+        <p>Join <span>AssetFlow</span> and take control of your assets</p>
+      </div>
+
+      <form class="auth-form" id="signup-form" novalidate>
+        <div class="form-group" id="signup-name-group">
+          <label for="signup-name">Full name</label>
+          <input type="text" id="signup-name" class="form-input" placeholder="Alex Morgan" autocomplete="name" />
+          <span class="form-error">Name is required</span>
+        </div>
+
+        <div class="form-group" id="signup-email-group">
+          <label for="signup-email">Work email</label>
+          <input type="email" id="signup-email" class="form-input" placeholder="alex@company.com" autocomplete="email" />
+          <span class="form-error">Please enter a valid email address</span>
+        </div>
+
+        <div class="form-group" id="signup-org-group">
+          <label for="signup-org">Organization name</label>
+          <input type="text" id="signup-org" class="form-input" placeholder="Acme Corporation" autocomplete="organization" />
+          <span class="form-error">Organization name is required</span>
+        </div>
+
+        <div class="form-group" id="signup-password-group">
+          <label for="signup-password">Password</label>
+          <div class="password-wrap">
+            <input type="password" id="signup-password" class="form-input" placeholder="Min. 8 characters" autocomplete="new-password" />
+            <button type="button" class="toggle-password" data-target="signup-password" aria-label="Toggle password visibility">&#128065;</button>
+          </div>
+          <span class="form-error">Password must be at least 8 characters</span>
+        </div>
+
+        <div class="form-group" id="signup-confirm-group">
+          <label for="signup-confirm">Confirm password</label>
+          <div class="password-wrap">
+            <input type="password" id="signup-confirm" class="form-input" placeholder="Re-enter your password" autocomplete="new-password" />
+            <button type="button" class="toggle-password" data-target="signup-confirm" aria-label="Toggle password visibility">&#128065;</button>
+          </div>
+          <span class="form-error">Passwords do not match</span>
+        </div>
+
+        <div class="form-group">
+          <label for="signup-role">Role</label>
+          <select id="signup-role" class="form-input form-select">
+            <option value="employee" selected>Employee</option>
+            <option value="manager">Manager</option>
+            <option value="auditor">Auditor</option>
+          </select>
+          <div class="role-note">
+            <span class="role-badge">Employee</span>
+            Admin roles are assigned by your organization later
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary">Create Account</button>
+      </form>
+
+      <p class="auth-footer-link">
+        Already have an account? <a href="#" data-view="login">Sign in</a>
+      </p>
+    </div>
+
+    <!-- ═══ SIGNUP SUCCESS ═══ -->
+    <div class="auth-card auth-view" id="view-signup-success">
+      <div class="auth-header">
+        <div class="success-icon">&#9993;</div>
+        <h1>Check your inbox</h1>
+        <p>We've sent a verification link to your email</p>
+      </div>
+
+      <div class="success-note">
+        Click the link in your email to verify your account, then <strong>sign in</strong> to access your dashboard.
+      </div>
+
+      <div style="margin-top: 24px;">
+        <button type="button" class="btn-primary" data-view="login">Back to Sign In</button>
+      </div>
+    </div>
+
+    <!-- ═══ FORGOT PASSWORD ═══ -->
+    <div class="auth-card auth-view" id="view-forgot">
+      <div class="auth-header">
+        <div class="auth-avatar">?</div>
+        <h1>Reset password</h1>
+        <p>Enter your email and we'll send you a reset link</p>
+      </div>
+
+      <form class="auth-form" id="forgot-form" novalidate>
+        <div class="form-group" id="forgot-email-group">
+          <label for="forgot-email">Email address</label>
+          <input type="email" id="forgot-email" class="form-input" placeholder="you@company.com" autocomplete="email" />
+          <span class="form-error">Please enter a valid email address</span>
+        </div>
+
+        <button type="submit" class="btn-primary">Send Reset Link</button>
+      </form>
+
+      <p class="auth-footer-link">
+        Remember your password? <a href="#" data-view="login">Back to Sign In</a>
+      </p>
+    </div>
+
+    <!-- ═══ FORGOT SUCCESS ═══ -->
+    <div class="auth-card auth-view" id="view-forgot-success">
+      <div class="auth-header">
+        <div class="success-icon">&#10003;</div>
+        <h1>Check your inbox</h1>
+        <p>Password reset link sent successfully</p>
+      </div>
+
+      <div class="success-note">
+        If an account exists for that email, you'll receive a link to reset your password shortly.
+      </div>
+
+      <div style="margin-top: 24px;">
+        <button type="button" class="btn-primary" data-view="login">Back to Sign In</button>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const views = {
+      login: document.getElementById('view-login'),
+      signup: document.getElementById('view-signup'),
+      'signup-success': document.getElementById('view-signup-success'),
+      forgot: document.getElementById('view-forgot'),
+      'forgot-success': document.getElementById('view-forgot-success'),
+    };
+
+    const titles = {
+      login: 'AssetFlow — Sign In',
+      signup: 'AssetFlow — Create Account',
+      'signup-success': 'AssetFlow — Verify Email',
+      forgot: 'AssetFlow — Reset Password',
+      'forgot-success': 'AssetFlow — Check Inbox',
+    };
+
+    function showView(name) {
+      Object.values(views).forEach(v => v.classList.remove('active'));
+      if (views[name]) {
+        views[name].classList.add('active');
+        document.title = titles[name] || 'AssetFlow';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    document.querySelectorAll('[data-view]').forEach(el => {
+      el.addEventListener('click', e => {
+        e.preventDefault();
+        showView(el.dataset.view);
+      });
+    });
+
+    document.querySelectorAll('.toggle-password').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const input = document.getElementById(btn.dataset.target);
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        btn.textContent = isPassword ? '\u{1F648}' : '\u{1F441}';
+      });
+    });
+
+    function isValidEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function setError(groupId, hasError) {
+      const group = document.getElementById(groupId);
+      const input = group.querySelector('.form-input');
+      group.classList.toggle('has-error', hasError);
+      input.classList.toggle('error', hasError);
+      return !hasError;
+    }
+
+    document.getElementById('login-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      const emailOk = setError('login-email-group', !isValidEmail(email));
+      const passOk = setError('login-password-group', !password);
+      if (emailOk && passOk) {
+        alert('Signed in successfully! (Mock — would redirect to /dashboard)');
+      }
+    });
+
+    document.getElementById('signup-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const name = document.getElementById('signup-name').value.trim();
+      const email = document.getElementById('signup-email').value.trim();
+      const org = document.getElementById('signup-org').value.trim();
+      const password = document.getElementById('signup-password').value;
+      const confirm = document.getElementById('signup-confirm').value;
+
+      const nameOk = setError('signup-name-group', !name);
+      const emailOk = setError('signup-email-group', !isValidEmail(email));
+      const orgOk = setError('signup-org-group', !org);
+      const passOk = setError('signup-password-group', password.length < 8);
+      const confirmOk = setError('signup-confirm-group', password !== confirm);
+
+      if (nameOk && emailOk && orgOk && passOk && confirmOk) {
+        showView('signup-success');
+      }
+    });
+
+    document.getElementById('forgot-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const email = document.getElementById('forgot-email').value.trim();
+      if (setError('forgot-email-group', !isValidEmail(email))) {
+        showView('forgot-success');
+      }
+    });
+
+    document.getElementById('signup-role').addEventListener('change', e => {
+      const badge = document.querySelector('.role-badge');
+      const labels = { employee: 'Employee', manager: 'Manager', auditor: 'Auditor' };
+      badge.textContent = labels[e.target.value] || 'Employee';
+    });
+
+    const hash = window.location.hash.replace('#', '');
+    if (hash && views[hash]) showView(hash);
+  </script>
+</body>
+</html>
