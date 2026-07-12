@@ -193,7 +193,7 @@ Retired
 
 ---
 
-## 🔒 Security
+## Security
 
 - JWT Authentication
 - Role-Based Access Control
@@ -203,7 +203,7 @@ Retired
 
 ---
 
-## 🚀 Deployment
+## Deployment
 
 Supported platforms:
 
@@ -212,7 +212,7 @@ Supported platforms:
 
 ---
 
-## 🔮 Future Enhancements
+## Future Enhancements
 
 - AI-powered maintenance prediction
 - Barcode & QR scanning
@@ -239,7 +239,8 @@ Create a Pull Request.
 
 - Rushil Parikh
 - Shlok Shah
-- Team Members
+- Aaryan Gajjar
+- Panav Patel
 
 ---
 
