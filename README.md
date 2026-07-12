@@ -12,6 +12,10 @@ assetflow/
 ├── postcss.config.js
 ├── README.md
 ├── prisma/
+|    ├── schema.prisma
+│    ├── seed.ts
+│    └── migrations/
+|
 ├── public/
 ├── src/
 └── tests/
