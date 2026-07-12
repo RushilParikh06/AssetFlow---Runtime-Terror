@@ -1,93 +1,169 @@
-## 📂 Project Structure
+## Project Structure
 
 ```text
-src/
-├── lib/
-│   ├── db.ts               # Prisma Client singleton
-│   ├── auth.ts             # Auth.js NextAuth configuration
-│   ├── rbac.ts             # Gating middleware role checks
-│   └── validators/         # Zod schemas for forms/API validation
-├── services/               # DB query & transactional logic layer
-│   ├── department.service.ts
-│   ├── employee.service.ts
-│   ├── asset.service.ts
-│   ├── allocation.service.ts
-│   ├── booking.service.ts
-│   ├── maintenance.service.ts
-│   ├── audit.service.ts
-│   └── notification.service.ts
-└── app/
-    ├── api/                # API Route Handlers (JSON endpoints)
-    │   ├── auth/           # Login / Signup / Logout
-    │   ├── departments/    # Department CRUD
-    │   ├── categories/     # Asset categories
-    │   ├── employees/      # Employee Directory & Promotions
-    │   ├── assets/         # Asset CRUD & history logs
-    │   ├── allocations/    # Allocations, Returns & Transfers
-    │   ├── bookings/       # Overlap-free room/vehicle reservations
-    │   ├── maintenance/    # Repair pipeline status updates
-    │   ├── audits/         # Verification checks & cycle closures
-    │   ├── notifications/  # User in-app alerts
-    │   ├── reports/        # Export CSV downloads
-    │   └── dashboard/      # KPI values & charts aggregation
-    ├── middleware.ts        # Next.js route protection & page RBAC
-    ├── layout.tsx
-    └── page.tsx            # Landing page
+assetflow/
+├── .env.local
+├── .env.example
+├── .gitignore
+├── next.config.js
+├── package.json
+├── tsconfig.json
+├── tailwind.config.ts
+├── postcss.config.js
+├── README.md
+├── prisma/
+|    ├── schema.prisma
+│    ├── seed.ts
+│    └── migrations/
+|
+├── public/
+|    ├── images/
+│    └── icons/
+├── src/
+│   ├── app/                            
+│   │   ├── layout.tsx
+│   │   ├── page.tsx                     
+│   │   ├── globals.css
+│   │   │
+│   │   ├── (auth)/                      
+│   │   │   ├── login/page.tsx
+│   │   │   ├── signup/page.tsx
+│   │   │   └── forgot-password/page.tsx
+│   │   │
+│   │   ├── (dashboard)/                 
+│   │   │   ├── layout.tsx               
+│   │   │   ├── dashboard/page.tsx       
+│   │   │   │
+│   │   │   ├── organization/            
+│   │   │   │   ├── layout.tsx           
+│   │   │   │   ├── departments/page.tsx
+│   │   │   │   ├── categories/page.tsx
+│   │   │   │   └── employees/page.tsx
+│   │   │   │
+│   │   │   ├── assets/                  
+│   │   │   │   ├── page.tsx             
+│   │   │   │   ├── new/page.tsx         
+│   │   │   │   └── [assetId]/page.tsx   
+│   │   │   │
+│   │   │   ├── allocations/page.tsx     
+│   │   │   ├── bookings/page.tsx        
+│   │   │   ├── maintenance/page.tsx     
+│   │   │   │
+│   │   │   ├── audits/                  
+│   │   │   │   ├── page.tsx             
+│   │   │   │   └── [auditId]/page.tsx   
+│   │   │   │
+│   │   │   ├── reports/page.tsx         
+│   │   │   └── notifications/page.tsx   
+│   │   │
+│   │   └── api/                         
+│   │       ├── auth/
+│   │       │   ├── login/route.ts
+│   │       │   ├── signup/route.ts      
+│   │       │   └── logout/route.ts
+│   │       ├── departments/
+│   │       │   ├── route.ts             
+│   │       │   └── [id]/route.ts        
+│   │       ├── categories/
+│   │       │   ├── route.ts
+│   │       │   └── [id]/route.ts
+│   │       ├── employees/
+│   │       │   ├── route.ts
+│   │       │   └── [id]/
+│   │       │       ├── route.ts
+│   │       │       └── promote/route.ts 
+│   │       ├── assets/
+│   │       │   ├── route.ts
+│   │       │   └── [id]/
+│   │       │       ├── route.ts
+│   │       │       └── history/route.ts
+│   │       ├── allocations/
+│   │       │   ├── route.ts             
+│   │       │   ├── [id]/
+│   │       │   │   ├── route.ts
+│   │       │   │   └── return/route.ts
+│   │       │   └── transfer/route.ts    
+│   │       ├── bookings/
+│   │       │   ├── route.ts             
+│   │       │   └── [id]/route.ts        
+│   │       ├── maintenance/
+│   │       │   ├── route.ts
+│   │       │   └── [id]/
+│   │       │       ├── route.ts
+│   │       │       └── status/route.ts  
+│   │       ├── audits/
+│   │       │   ├── route.ts
+│   │       │   └── [id]/
+│   │       │       ├── route.ts
+│   │       │       ├── verify/route.ts  
+│   │       │       └── close/route.ts
+│   │       ├── notifications/route.ts
+│   │       └── reports/route.ts
+│   │
+│   ├── components/
+│   │   ├── ui/                          
+│   │   ├── layout/                      
+│   │   ├── dashboard/                   
+│   │   ├── assets/                      
+│   │   ├── allocations/                 
+│   │   ├── bookings/                   
+│   │   ├── maintenance/                
+│   │   ├── audits/                      
+│   │   └── shared/
+|   |
+|   ├── lib/
+│   │   ├── db.ts                        
+│   │   ├── auth.ts                      
+│   │   ├── rbac.ts                      
+│   │   └── validators/                  
+│   │       ├── asset.schema.ts
+│   │       ├── booking.schema.ts
+│   │       ├── allocation.schema.ts
+│   │       └── maintenance.schema.ts  
+|   |
+|   ├── services/                         
+│   │   ├── asset.service.ts
+│   │   ├── allocation.service.ts         
+│   │   ├── booking.service.ts            
+│   │   ├── maintenance.service.ts        
+│   │   ├── audit.service.ts              
+│   │   └── notification.service.ts
+|   |
+|   ├── hooks/
+│   ├── store/
+│   ├── types/
+│   │   ├── enums.ts                     
+│   │   ├── asset.types.ts
+│   │   └── index.ts
+│   │
+│   └── middleware.ts 
+└── tests/
 ```
 
----
+Tech Stack 
 
-## 🚀 Local Development Setup
-
-To run this backend system locally on your macOS system:
-
-### 1. Prerequisite background services (PostgreSQL & Redis)
-Ensure you start PostgreSQL and Redis via Homebrew:
-```bash
-brew services start postgresql@16
-brew services start redis
 ```
+Frontend:
+- Next.js 15 App Router
+- TypeScript
+- TailwindCSS
+- Shadcn/UI
+- React Hook Form
+- Zod
+- Zustand
+- TanStack Query
+- Recharts
+- FullCalendar
 
-### 2. Configure Environment Variables
-Copy and rename the `.env.example` template:
-```bash
-cp .env.example .env
+Backend:
+- Next.js Route Handlers
+- Server Actions where appropriate
+- Prisma ORM
+- PostgreSQL
+
+Authentication:
+- Auth.js v5
+- JWT Sessions
+- RBAC
+
 ```
-Ensure the `DATABASE_URL` is pointing to your local PostgreSQL instance:
-```env
-DATABASE_URL="postgresql://panavpatel@localhost:5432/assetflow?schema=public"
-REDIS_URL="redis://localhost:6379"
-AUTH_SECRET="e4ba73297d9bfed4ed0dd413b47a6dd5779af18a90203fabcc26c42ff856656d"
-NEXTAUTH_URL="http://localhost:3000"
-```
-
-### 3. Create the Database & Apply Migrations
-```bash
-# Initialize and sync DB tables
-npx prisma migrate dev --name init
-```
-
-### 4. Seed the Database
-Populate your database with mock users, assets, categories, and allocations:
-```bash
-npx tsx prisma/seed.ts
-```
-
-### 5. Start the Development Server
-```bash
-npm run dev
-```
-The server will start at `http://localhost:3000`. You can query the REST endpoints via HTTP requests (e.g. `GET /api/assets`).
-
----
-
-## 🔑 Test Accounts
-The database is seeded with these pre-configured user credentials (all passwords have the suffix `123!`):
-
-| Role | Email | Password |
-| :--- | :--- | :--- |
-| **Admin** | `admin@assetflow.com` | `Admin123!` |
-| **Asset Manager** | `manager@assetflow.com` | `Manager123!` |
-| **Department Head** | `head@assetflow.com` | `Head123!` |
-| **Employee** | `employee@assetflow.com` | `Employee123!` |
-| **Auditor** | `auditor@assetflow.com` | `Auditor123!` |
