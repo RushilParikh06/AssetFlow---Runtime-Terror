@@ -1,4 +1,4 @@
-## 📁 Project Structure
+## Project Structure
 
 ```text
 assetflow/
@@ -100,6 +100,42 @@ assetflow/
 │   │       ├── notifications/route.ts
 │   │       └── reports/route.ts
 │   │
+│   ├── components/
+│   │   ├── ui/                          
+│   │   ├── layout/                      
+│   │   ├── dashboard/                   
+│   │   ├── assets/                      
+│   │   ├── allocations/                 
+│   │   ├── bookings/                   
+│   │   ├── maintenance/                
+│   │   ├── audits/                      
+│   │   └── shared/
+|   |
+|   ├── lib/
+│   │   ├── db.ts                        
+│   │   ├── auth.ts                      
+│   │   ├── rbac.ts                      
+│   │   └── validators/                  
+│   │       ├── asset.schema.ts
+│   │       ├── booking.schema.ts
+│   │       ├── allocation.schema.ts
+│   │       └── maintenance.schema.ts  
+|   |
+|   ├── services/                         
+│   │   ├── asset.service.ts
+│   │   ├── allocation.service.ts         
+│   │   ├── booking.service.ts            
+│   │   ├── maintenance.service.ts        
+│   │   ├── audit.service.ts              
+│   │   └── notification.service.ts
+|   |
+|   ├── hooks/
+│   ├── store/
+│   ├── types/
+│   │   ├── enums.ts                     
+│   │   ├── asset.types.ts
+│   │   └── index.ts
 │   │
+│   └── middleware.ts 
 └── tests/
 ```
