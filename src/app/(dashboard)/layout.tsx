@@ -31,7 +31,7 @@ export default function DashboardLayout({
       {/* ─── SIDEBAR ─── */}
       <aside className="dashboard-sidebar">
         <div className="sidebar-header">
-          <Link href="/dashboard" className="sidebar-brand">
+          <Link href="/screen-3" className="sidebar-brand">
             <div className="sidebar-logo">AF</div>
             <span className="sidebar-name">AssetFlow</span>
           </Link>
@@ -39,9 +39,9 @@ export default function DashboardLayout({
 
         <nav className="sidebar-nav">
           <div className="nav-group-title">Overview</div>
-          <Link href="/dashboard" className={`nav-item ${pathname === '/dashboard' ? 'active' : ''}`}>
+          <Link href="/screen-3" className={`nav-item ${pathname === '/screen-3' ? 'active' : ''}`}>
             <LayoutDashboard />
-            <span>Dashboard</span>
+            <span>Screen 3</span>
           </Link>
           <Link href="/reports" className={`nav-item ${isActive('/reports')}`}>
             <BarChart3 />

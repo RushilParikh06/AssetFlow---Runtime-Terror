@@ -21,7 +21,7 @@ export default auth((req) => {
   
   if (isAuthRoute) {
     if (isLoggedIn) {
-      return NextResponse.redirect(new URL("/dashboard", nextUrl))
+      return NextResponse.redirect(new URL("/screen-3", nextUrl))
     }
     return NextResponse.next()
   }
@@ -36,14 +36,14 @@ export default auth((req) => {
     
     // Organization Setup is Admin only
     if (nextUrl.pathname.startsWith("/organization") && role !== Role.ADMIN) {
-      return NextResponse.redirect(new URL("/dashboard", nextUrl))
+      return NextResponse.redirect(new URL("/screen-3", nextUrl))
     }
     
     // Audits page requires ADMIN, AUDITOR, or ASSET_MANAGER
     if (nextUrl.pathname.startsWith("/audits")) {
       const allowed: Role[] = [Role.ADMIN, Role.AUDITOR, Role.ASSET_MANAGER]
       if (!allowed.includes(role as Role)) {
-        return NextResponse.redirect(new URL("/dashboard", nextUrl))
+        return NextResponse.redirect(new URL("/screen-3", nextUrl))
       }
     }
   }

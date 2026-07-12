@@ -36,7 +36,7 @@ export default function AuthPage() {
 
     if (!emailOk && !passOk) {
       // Mock login - redirect to dashboard
-      router.push("/dashboard");
+      router.push("/screen-3");
     }
   };
 
