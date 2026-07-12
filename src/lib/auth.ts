@@ -1,14 +1,13 @@
 import NextAuth from "next-auth"
-import CredentialsProvider from "next-auth/providers/credentials"
+import Credentials from "next-auth/providers/credentials"
 import prisma from "@/lib/db"
 import bcrypt from "bcryptjs"
-import { Role } from "@prisma/client"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
   secret: process.env.AUTH_SECRET,
   providers: [
-    CredentialsProvider({
+    Credentials({
       name: "credentials",
       credentials: {
         email: { label: "Email", type: "email" },
@@ -21,7 +20,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         
         const user = await prisma.user.findUnique({
           where: { email: credentials.email as string },
-          include: { employee: true }
+          include: {
+            employee: {
+              select: { id: true, name: true }
+            }
+          }
         })
         
         if (!user || !user.status) {
@@ -41,8 +44,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           id: user.id,
           email: user.email,
           role: user.role,
-          employeeId: user.employee?.id || null,
-          employeeName: user.employee?.name || null,
+          employeeId: user.employee?.id ?? null,
+          employeeName: user.employee?.name ?? null,
         }
       }
     })
@@ -55,15 +58,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.id = user.id
         token.role = user.role
-        token.employeeId = user.employeeId
-        token.employeeName = user.employeeName
+        token.employeeId = (user as any).employeeId
+        token.employeeName = (user as any).employeeName
       }
       return token
     },
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id as string
-        session.user.role = token.role as Role
+        session.user.role = token.role as any
         session.user.employeeId = token.employeeId as string | null
         session.user.employeeName = token.employeeName as string | null
       }
