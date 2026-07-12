@@ -16,7 +16,6 @@ import {
   Settings,
   ChevronDown
 } from "lucide-react";
-import "./dashboard.css";
 
 export default function DashboardLayout({
   children,
@@ -46,7 +45,7 @@ export default function DashboardLayout({
           </Link>
           <Link href="/reports" className={`nav-item ${isActive('/reports')}`}>
             <BarChart3 />
-            <span>Reports & Analytics</span>
+            <span>Reports &amp; Analytics</span>
           </Link>
 
           <div className="nav-group-title">Core Modules</div>
@@ -56,7 +55,7 @@ export default function DashboardLayout({
           </Link>
           <Link href="/allocations" className={`nav-item ${isActive('/allocations')}`}>
             <ArrowRightLeft />
-            <span>Allocations & Transfer</span>
+            <span>Allocations &amp; Transfer</span>
           </Link>
           <Link href="/bookings" className={`nav-item ${isActive('/bookings')}`}>
             <CalendarDays />
@@ -68,7 +67,7 @@ export default function DashboardLayout({
           </Link>
           <Link href="/audits" className={`nav-item ${isActive('/audits')}`}>
             <ClipboardCheck />
-            <span>Audits & Compliance</span>
+            <span>Audits &amp; Compliance</span>
           </Link>
 
           <div className="nav-group-title">Organization</div>
@@ -108,7 +107,7 @@ export default function DashboardLayout({
             </button>
             <div className="user-profile" style={{ padding: 0 }}>
               <div className="user-avatar" style={{ width: '32px', height: '32px', fontSize: '12px' }}>AM</div>
-              <ChevronDown size={16} className="text-muted" style={{ marginLeft: '4px', color: 'var(--text-muted)' }} />
+              <ChevronDown size={16} style={{ marginLeft: '4px', color: 'var(--text-3)' }} />
             </div>
           </div>
         </header>

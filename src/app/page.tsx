@@ -136,8 +136,8 @@ export default function LandingPage() {
             <div className="card-icon">&#128295;</div>
             <h3>Maintenance Workflows</h3>
             <p>Create, approve, and track maintenance requests with role-based <span>approval chains</span> built in.</p>
-            <div className="status-badge" style={{ background: 'rgba(96,165,250,0.1)', borderColor: 'rgba(96,165,250,0.2)', color: '#60a5fa', marginTop: '20px' }}>
-              <span className="sdot" style={{ background: '#60a5fa' }}></span>
+            <div className="status-badge" style={{ background: 'var(--blue-dim, rgba(96,165,250,0.1))', borderColor: 'rgba(96,165,250,0.2)', color: 'var(--blue, #60a5fa)', marginTop: '20px' }}>
+              <span className="sdot" style={{ background: 'var(--blue, #60a5fa)' }}></span>
               3 requests pending approval
             </div>
           </div>
@@ -149,20 +149,20 @@ export default function LandingPage() {
             <p style={{ maxWidth: '520px' }}>Every action — every allocation, transfer, and maintenance update — is logged immutably. Full <span>compliance</span> and accountability at every step.</p>
             <div style={{ display: 'flex', gap: '12px', marginTop: '28px', flexWrap: 'wrap' }}>
               <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: '10px', padding: '14px 20px', minWidth: '140px' }}>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' }}>Asset Allocated</div>
-                <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>MacBook Pro #42 &#8594; Design Team</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-3)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' }}>Asset Allocated</div>
+                <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>MacBook Pro #42 &#8594; Design Team</div>
               </div>
               <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: '10px', padding: '14px 20px', minWidth: '140px' }}>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' }}>Maintenance Done</div>
-                <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Server Rack #7 &#8212; Serviced</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-3)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' }}>Maintenance Done</div>
+                <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>Server Rack #7 &mdash; Serviced</div>
               </div>
               <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: '10px', padding: '14px 20px', minWidth: '140px' }}>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' }}>Booking Created</div>
-                <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Projector B &#8594; Floor 3</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-3)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' }}>Booking Created</div>
+                <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>Projector B &#8594; Floor 3</div>
               </div>
               <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: '10px', padding: '14px 20px', minWidth: '140px' }}>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' }}>Role Promoted</div>
-                <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>alex@corp.io &#8594; Admin</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-3)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' }}>Role Promoted</div>
+                <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>alex@corp.io &#8594; Admin</div>
               </div>
             </div>
           </div>

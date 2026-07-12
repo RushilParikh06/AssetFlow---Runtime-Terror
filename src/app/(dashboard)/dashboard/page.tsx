@@ -7,13 +7,14 @@ import {
   Clock, 
   Calendar, 
   ArrowRightLeft, 
+  ArrowUpRight,
+  ArrowDownRight,
   AlertTriangle,
   X,
   Plus,
   CalendarPlus,
   Ticket
 } from "lucide-react";
-import "../dashboard.css";
 
 export default function DashboardPage() {
   const [showAlert, setShowAlert] = useState(true);
@@ -84,79 +85,79 @@ export default function DashboardPage() {
       <div className="kpi-grid fade-in-up" style={{ animationDelay: '0.2s' }}>
         <div className="kpi-card">
           <div className="kpi-header">
-            <span className="kpi-title">Total Assets</span>
-            <div className="kpi-icon" style={{ background: 'rgba(96,165,250,0.1)', color: 'var(--accent-blue)' }}>
+            <span className="kpi-label">Total Assets</span>
+            <div className="kpi-icon">
               <Box size={18} />
             </div>
           </div>
           <div className="kpi-value">2,451</div>
-          <div className="kpi-trend">
-            <span className="positive">+12</span> since last month
+          <div className="kpi-delta up">
+            <ArrowUpRight size={14} /> +12 since last month
           </div>
         </div>
 
         <div className="kpi-card">
           <div className="kpi-header">
-            <span className="kpi-title">Allocated</span>
-            <div className="kpi-icon" style={{ background: 'rgba(167,139,250,0.1)', color: 'var(--accent-violet)' }}>
+            <span className="kpi-label">Allocated</span>
+            <div className="kpi-icon">
               <CheckCircle2 size={18} />
             </div>
           </div>
           <div className="kpi-value">1,832</div>
-          <div className="kpi-trend">
-            <span className="positive">74.7%</span> utilization rate
+          <div className="kpi-delta up">
+            <ArrowUpRight size={14} /> 74.7% utilization rate
           </div>
         </div>
 
         <div className="kpi-card">
           <div className="kpi-header">
-            <span className="kpi-title">Available</span>
-            <div className="kpi-icon" style={{ background: 'rgba(34,197,94,0.1)', color: 'var(--accent-green)' }}>
+            <span className="kpi-label">Available</span>
+            <div className="kpi-icon">
               <CheckCircle2 size={18} />
             </div>
           </div>
           <div className="kpi-value">594</div>
-          <div className="kpi-trend">
-            <span className="negative">-3</span> since yesterday
+          <div className="kpi-delta down">
+            <ArrowDownRight size={14} /> -3 since yesterday
           </div>
         </div>
 
         <div className="kpi-card">
           <div className="kpi-header">
-            <span className="kpi-title">Active Bookings</span>
-            <div className="kpi-icon" style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--text-primary)' }}>
+            <span className="kpi-label">Active Bookings</span>
+            <div className="kpi-icon">
               <Calendar size={18} />
             </div>
           </div>
           <div className="kpi-value">48</div>
-          <div className="kpi-trend">
-            <span>For today</span>
+          <div className="kpi-delta neutral">
+            For today
           </div>
         </div>
 
         <div className="kpi-card">
           <div className="kpi-header">
-            <span className="kpi-title">Pending Transfers</span>
-            <div className="kpi-icon" style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--text-primary)' }}>
+            <span className="kpi-label">Pending Transfers</span>
+            <div className="kpi-icon">
               <ArrowRightLeft size={18} />
             </div>
           </div>
           <div className="kpi-value">12</div>
-          <div className="kpi-trend">
-            <span>Awaiting approval</span>
+          <div className="kpi-delta neutral">
+            Awaiting approval
           </div>
         </div>
 
         <div className="kpi-card">
           <div className="kpi-header">
-            <span className="kpi-title">Upcoming Returns</span>
-            <div className="kpi-icon" style={{ background: 'rgba(245,158,11,0.1)', color: '#fcd34d' }}>
+            <span className="kpi-label">Upcoming Returns</span>
+            <div className="kpi-icon">
               <Clock size={18} />
             </div>
           </div>
           <div className="kpi-value">7</div>
-          <div className="kpi-trend">
-            <span>Due in next 24h</span>
+          <div className="kpi-delta neutral">
+            Due in next 24h
           </div>
         </div>
       </div>
