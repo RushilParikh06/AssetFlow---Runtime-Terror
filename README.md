@@ -155,4 +155,15 @@ Frontend:
 - Recharts
 - FullCalendar
 
+Backend:
+- Next.js Route Handlers
+- Server Actions where appropriate
+- Prisma ORM
+- PostgreSQL
+
+Authentication:
+- Auth.js v5
+- JWT Sessions
+- RBAC
+
 ```
