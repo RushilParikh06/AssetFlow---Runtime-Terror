@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/db"
 import { checkRole, rbacResponse } from "@/lib/rbac"
 import { Role, AssetStatus, AllocationStatus, BookingStatus, MaintenanceStatus } from "@prisma/client"
+import { apiSuccess, apiServerError, apiValidationError } from "@/lib/api-response"
 
 // Helper to convert JSON array to a CSV string
 function convertToCsv(items: any[], headers: string[], keys: string[]): string {
@@ -27,7 +28,6 @@ function convertToCsv(items: any[], headers: string[], keys: string[]): string {
 }
 
 export async function GET(req: NextRequest) {
-  // Gated to Admin, Asset Manager, Department Head, and Auditor
   const rbac = await checkRole([
     Role.ADMIN,
     Role.ASSET_MANAGER,
@@ -144,7 +144,7 @@ export async function GET(req: NextRequest) {
         break
 
       default:
-        return NextResponse.json({ error: "Invalid report type requested" }, { status: 400 })
+        return apiValidationError("Invalid report type requested")
     }
 
     if (format.toLowerCase() === "csv") {
@@ -157,12 +157,9 @@ export async function GET(req: NextRequest) {
       })
     }
 
-    return NextResponse.json({ type, count: data.length, data })
+    return apiSuccess({ type, count: data.length, data })
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Internal Server Error" },
-      { status: 500 }
-    )
+    return apiServerError(error.message || "Internal Server Error")
   }
 }
 export const runtime = "nodejs"

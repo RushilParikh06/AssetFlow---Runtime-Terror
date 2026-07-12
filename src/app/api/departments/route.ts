@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { DepartmentService } from "@/services/department.service"
 import { checkRole, rbacResponse } from "@/lib/rbac"
 import { Role } from "@prisma/client"
+import { apiPaginated, apiCreated, apiServerError, apiValidationError, parsePagination } from "@/lib/api-response"
 
 export async function GET(req: NextRequest) {
-  // Allow all logged-in roles to query departments
   const rbac = await checkRole([
     Role.ADMIN,
     Role.ASSET_MANAGER,
@@ -18,6 +18,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const searchParams = req.nextUrl.searchParams
+    const { page, pageSize, skip, take } = parsePagination(searchParams)
     const statusParam = searchParams.get("status")
     
     let status: boolean | undefined = undefined
@@ -27,18 +28,14 @@ export async function GET(req: NextRequest) {
       status = false
     }
 
-    const departments = await DepartmentService.getAllDepartments({ status })
-    return NextResponse.json(departments)
+    const { items, total } = await DepartmentService.getAllDepartments({ status, skip, take })
+    return apiPaginated(items, total, page, pageSize)
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Internal Server Error" },
-      { status: 500 }
-    )
+    return apiServerError(error.message || "Internal Server Error")
   }
 }
 
 export async function POST(req: NextRequest) {
-  // Gated strictly to Admin
   const rbac = await checkRole([Role.ADMIN])
   if (!rbac.authorized) {
     return rbacResponse(rbac.status, rbac.message)
@@ -49,10 +46,7 @@ export async function POST(req: NextRequest) {
     const { name, code, description, parentDepartmentId, departmentHeadId } = body
     
     if (!name || !code) {
-      return NextResponse.json(
-        { error: "Name and Code are required fields" },
-        { status: 400 }
-      )
+      return apiValidationError("Name and Code are required fields")
     }
 
     const department = await DepartmentService.createDepartment({
@@ -63,12 +57,9 @@ export async function POST(req: NextRequest) {
       departmentHeadId
     })
     
-    return NextResponse.json(department, { status: 201 })
+    return apiCreated(department, "Department created successfully")
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Bad Request" },
-      { status: 400 }
-    )
+    return apiServerError(error.message || "Bad Request")
   }
 }
 export const runtime = "nodejs"

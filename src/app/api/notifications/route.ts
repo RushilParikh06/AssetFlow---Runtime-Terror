@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { NotificationService } from "@/services/notification.service"
 import { checkRole, rbacResponse } from "@/lib/rbac"
 import { Role } from "@prisma/client"
+import { apiPaginated, apiSuccess, apiServerError, parsePagination } from "@/lib/api-response"
 
 export async function GET(req: NextRequest) {
   const rbac = await checkRole([
@@ -17,19 +18,17 @@ export async function GET(req: NextRequest) {
 
   try {
     const searchParams = req.nextUrl.searchParams
+    const { page, pageSize, skip, take } = parsePagination(searchParams)
     const unreadOnly = searchParams.get("unread") === "true"
 
-    const notifications = await NotificationService.getUserNotifications(rbac.user.id, { unreadOnly })
-    return NextResponse.json(notifications)
+    const { items, total } = await NotificationService.getUserNotifications(rbac.user.id, { unreadOnly, skip, take })
+    return apiPaginated(items, total, page, pageSize)
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Internal Server Error" },
-      { status: 500 }
-    )
+    return apiServerError(error.message || "Internal Server Error")
   }
 }
 
-export async function PUT(req: NextRequest) {
+async function handleMarkRead(req: NextRequest) {
   const rbac = await checkRole([
     Role.ADMIN,
     Role.ASSET_MANAGER,
@@ -46,19 +45,22 @@ export async function PUT(req: NextRequest) {
     const { notificationId } = body
 
     if (notificationId) {
-      // Mark a single notification as read
       const notification = await NotificationService.markAsRead(notificationId)
-      return NextResponse.json({ success: true, notification })
+      return apiSuccess(notification, 200, "Notification marked as read")
     } else {
-      // Mark all notifications as read for current user
       await NotificationService.markAllAsRead(rbac.user.id)
-      return NextResponse.json({ success: true, message: "All notifications marked as read" })
+      return apiSuccess(null, 200, "All notifications marked as read")
     }
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Bad Request" },
-      { status: 400 }
-    )
+    return apiServerError(error.message || "Bad Request")
   }
+}
+
+export async function PUT(req: NextRequest) {
+  return handleMarkRead(req)
+}
+
+export async function PATCH(req: NextRequest) {
+  return handleMarkRead(req)
 }
 export const runtime = "nodejs"

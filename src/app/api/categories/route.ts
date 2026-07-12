@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { CategoryService } from "@/services/category.service"
 import { checkRole, rbacResponse } from "@/lib/rbac"
 import { Role } from "@prisma/client"
+import { apiPaginated, apiCreated, apiServerError, apiValidationError, parsePagination } from "@/lib/api-response"
 
 export async function GET(req: NextRequest) {
   const rbac = await checkRole([
@@ -17,6 +18,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const searchParams = req.nextUrl.searchParams
+    const { page, pageSize, skip, take } = parsePagination(searchParams)
     const statusParam = searchParams.get("status")
     
     let status: boolean | undefined = undefined
@@ -26,13 +28,10 @@ export async function GET(req: NextRequest) {
       status = false
     }
 
-    const categories = await CategoryService.getAllCategories({ status })
-    return NextResponse.json(categories)
+    const { items, total } = await CategoryService.getAllCategories({ status, skip, take })
+    return apiPaginated(items, total, page, pageSize)
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Internal Server Error" },
-      { status: 500 }
-    )
+    return apiServerError(error.message || "Internal Server Error")
   }
 }
 
@@ -47,10 +46,7 @@ export async function POST(req: NextRequest) {
     const { name, description, customFields, status } = body
 
     if (!name) {
-      return NextResponse.json(
-        { error: "Category Name is required" },
-        { status: 400 }
-      )
+      return apiValidationError("Category Name is required", "name")
     }
 
     const category = await CategoryService.createCategory({
@@ -60,12 +56,9 @@ export async function POST(req: NextRequest) {
       status
     })
 
-    return NextResponse.json(category, { status: 201 })
+    return apiCreated(category, "Category created successfully")
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Bad Request" },
-      { status: 400 }
-    )
+    return apiServerError(error.message || "Bad Request")
   }
 }
 export const runtime = "nodejs"

@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import prisma from "@/lib/db"
 import bcrypt from "bcryptjs"
 import { signupSchema } from "@/lib/validators/auth.schema"
+import { apiCreated, apiValidationError, apiServerError } from "@/lib/api-response"
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,10 +10,7 @@ export async function POST(req: NextRequest) {
     const validation = signupSchema.safeParse(body)
     
     if (!validation.success) {
-      return NextResponse.json(
-        { error: "Validation error", details: validation.error.format() },
-        { status: 400 }
-      )
+      return apiValidationError("Validation error", "validation")
     }
     
     const { name, email, password, phone } = validation.data
@@ -23,10 +21,7 @@ export async function POST(req: NextRequest) {
     })
     
     if (existingUser) {
-      return NextResponse.json(
-        { error: "An account with this email already exists" },
-        { status: 400 }
-      )
+      return apiValidationError("An account with this email already exists", "email")
     }
     
     // Auto-generate employeeId (e.g. AF-EMP-1001)
@@ -80,22 +75,15 @@ export async function POST(req: NextRequest) {
       }
     })
     
-    return NextResponse.json({
-      success: true,
-      message: "Account created successfully",
-      employee: {
-        id: result.employee.id,
-        employeeId: result.employee.employeeId,
-        name: result.employee.name,
-        email: result.employee.email
-      }
-    }, { status: 201 })
+    return apiCreated({
+      id: result.employee.id,
+      employeeId: result.employee.employeeId,
+      name: result.employee.name,
+      email: result.employee.email
+    }, "Account created successfully")
     
   } catch (error: any) {
     console.error("Signup error:", error)
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    )
+    return apiServerError("Internal server error")
   }
 }

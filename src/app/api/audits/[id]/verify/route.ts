@@ -1,13 +1,13 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { AuditService } from "@/services/audit.service"
 import { checkRole, rbacResponse } from "@/lib/rbac"
 import { Role, VerificationStatus } from "@prisma/client"
+import { apiSuccess, apiServerError, apiValidationError } from "@/lib/api-response"
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  // Gated to Admin and Auditor
   const rbac = await checkRole([Role.ADMIN, Role.AUDITOR])
   if (!rbac.authorized) {
     return rbacResponse(rbac.status, rbac.message)
@@ -19,14 +19,11 @@ export async function POST(
     const { assetId, status, notes } = body
 
     if (!assetId || !status || !Object.values(VerificationStatus).includes(status as VerificationStatus)) {
-      return NextResponse.json(
-        { error: "assetId and a valid status (VERIFIED, MISSING, DAMAGED) are required" },
-        { status: 400 }
-      )
+      return apiValidationError("assetId and a valid status (VERIFIED, MISSING, DAMAGED) are required")
     }
 
     if (!rbac.user.employeeId) {
-      return NextResponse.json({ error: "Your user account is not linked to an employee profile" }, { status: 400 })
+      return apiValidationError("Your user account is not linked to an employee profile")
     }
 
     const updatedItem = await AuditService.verifyAsset({
@@ -37,12 +34,9 @@ export async function POST(
       notes
     })
 
-    return NextResponse.json({ success: true, auditItem: updatedItem })
+    return apiSuccess(updatedItem, 200, "Asset verified successfully")
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Bad Request" },
-      { status: 400 }
-    )
+    return apiServerError(error.message || "Bad Request")
   }
 }
 export const runtime = "nodejs"

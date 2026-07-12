@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { MaintenanceService } from "@/services/maintenance.service"
 import { checkRole, rbacResponse } from "@/lib/rbac"
 import { Role, MaintenancePriority, MaintenanceStatus } from "@prisma/client"
+import { apiPaginated, apiCreated, apiServerError, apiValidationError, parsePagination } from "@/lib/api-response"
 
 export async function GET(req: NextRequest) {
   const rbac = await checkRole([
@@ -17,6 +18,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const searchParams = req.nextUrl.searchParams
+    const { page, pageSize, skip, take } = parsePagination(searchParams)
     const assetId = searchParams.get("assetId") || undefined
     const statusParam = searchParams.get("status") as MaintenanceStatus | null
     const status = statusParam && Object.values(MaintenanceStatus).includes(statusParam) ? statusParam : undefined
@@ -27,21 +29,17 @@ export async function GET(req: NextRequest) {
     const requestedById = searchParams.get("requestedById") || undefined
     const technicianId = searchParams.get("technicianId") || undefined
 
-    const filters: any = { assetId, status, priority, requestedById, technicianId }
+    const filters: any = { assetId, status, priority, requestedById, technicianId, skip, take }
 
     // Gated visibility: standard employees only see requests they raised or are assigned to
     if (rbac.user.role === Role.EMPLOYEE) {
-      // If employee, force filtering by requestedById or technicianId
       filters.requestedById = rbac.user.employeeId!
     }
 
-    const requests = await MaintenanceService.getRequests(filters)
-    return NextResponse.json(requests)
+    const { items, total } = await MaintenanceService.getRequests(filters)
+    return apiPaginated(items, total, page, pageSize)
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Internal Server Error" },
-      { status: 500 }
-    )
+    return apiServerError(error.message || "Internal Server Error")
   }
 }
 
@@ -61,14 +59,11 @@ export async function POST(req: NextRequest) {
     const { assetId, issueDescription, priority, estimatedCost } = body
 
     if (!assetId || !issueDescription || !priority) {
-      return NextResponse.json(
-        { error: "assetId, issueDescription, and priority are required" },
-        { status: 400 }
-      )
+      return apiValidationError("assetId, issueDescription, and priority are required")
     }
 
     if (!rbac.user.employeeId) {
-      return NextResponse.json({ error: "Your user account is not linked to an employee profile" }, { status: 400 })
+      return apiValidationError("Your user account is not linked to an employee profile")
     }
 
     const request = await MaintenanceService.raiseRequest({
@@ -79,12 +74,9 @@ export async function POST(req: NextRequest) {
       estimatedCost: estimatedCost ? parseFloat(estimatedCost) : null
     })
 
-    return NextResponse.json(request, { status: 201 })
+    return apiCreated(request, "Maintenance request raised successfully")
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Bad Request" },
-      { status: 400 }
-    )
+    return apiServerError(error.message || "Bad Request")
   }
 }
 export const runtime = "nodejs"

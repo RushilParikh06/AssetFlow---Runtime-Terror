@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { CategoryService } from "@/services/category.service"
 import { checkRole, rbacResponse } from "@/lib/rbac"
 import { Role } from "@prisma/client"
+import { apiSuccess, apiNotFound, apiServerError } from "@/lib/api-response"
 
 export async function GET(
   req: NextRequest,
@@ -22,20 +23,17 @@ export async function GET(
     const { id } = await params
     const category = await CategoryService.getCategoryById(id)
     if (!category) {
-      return NextResponse.json({ error: "Category not found" }, { status: 404 })
+      return apiNotFound("Category")
     }
-    return NextResponse.json(category)
+    return apiSuccess(category)
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Internal Server Error" },
-      { status: 500 }
-    )
+    return apiServerError(error.message || "Internal Server Error")
   }
 }
 
-export async function PUT(
+async function handleUpdate(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  id: string
 ) {
   const rbac = await checkRole([Role.ADMIN])
   if (!rbac.authorized) {
@@ -43,15 +41,27 @@ export async function PUT(
   }
 
   try {
-    const { id } = await params
     const body = await req.json()
     const updated = await CategoryService.updateCategory(id, body)
-    return NextResponse.json(updated)
+    return apiSuccess(updated, 200, "Category updated successfully")
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Bad Request" },
-      { status: 400 }
-    )
+    return apiServerError(error.message || "Bad Request")
   }
+}
+
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  return handleUpdate(req, id)
+}
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  return handleUpdate(req, id)
 }
 export const runtime = "nodejs"

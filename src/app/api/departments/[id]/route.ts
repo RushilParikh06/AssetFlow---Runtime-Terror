@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { DepartmentService } from "@/services/department.service"
 import { checkRole, rbacResponse } from "@/lib/rbac"
 import { Role } from "@prisma/client"
+import { apiSuccess, apiNotFound, apiServerError } from "@/lib/api-response"
 
 export async function GET(
   req: NextRequest,
@@ -22,14 +23,29 @@ export async function GET(
     const { id } = await params
     const department = await DepartmentService.getDepartmentById(id)
     if (!department) {
-      return NextResponse.json({ error: "Department not found" }, { status: 404 })
+      return apiNotFound("Department")
     }
-    return NextResponse.json(department)
+    return apiSuccess(department)
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Internal Server Error" },
-      { status: 500 }
-    )
+    return apiServerError(error.message || "Internal Server Error")
+  }
+}
+
+async function handleUpdate(
+  req: NextRequest,
+  id: string
+) {
+  const rbac = await checkRole([Role.ADMIN])
+  if (!rbac.authorized) {
+    return rbacResponse(rbac.status, rbac.message)
+  }
+
+  try {
+    const body = await req.json()
+    const updated = await DepartmentService.updateDepartment(id, body)
+    return apiSuccess(updated, 200, "Department updated successfully")
+  } catch (error: any) {
+    return apiServerError(error.message || "Bad Request")
   }
 }
 
@@ -37,22 +53,15 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  // Gated to Admin only
-  const rbac = await checkRole([Role.ADMIN])
-  if (!rbac.authorized) {
-    return rbacResponse(rbac.status, rbac.message)
-  }
+  const { id } = await params
+  return handleUpdate(req, id)
+}
 
-  try {
-    const { id } = await params
-    const body = await req.json()
-    const updated = await DepartmentService.updateDepartment(id, body)
-    return NextResponse.json(updated)
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Bad Request" },
-      { status: 400 }
-    )
-  }
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  return handleUpdate(req, id)
 }
 export const runtime = "nodejs"

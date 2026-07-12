@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { EmployeeService } from "@/services/employee.service"
 import { checkRole, rbacResponse } from "@/lib/rbac"
 import { Role } from "@prisma/client"
+import { apiPaginated, apiServerError, parsePagination } from "@/lib/api-response"
 
 export async function GET(req: NextRequest) {
   const rbac = await checkRole([
@@ -17,6 +18,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const searchParams = req.nextUrl.searchParams
+    const { page, pageSize, skip, take } = parsePagination(searchParams)
     const search = searchParams.get("search") || undefined
     const departmentId = searchParams.get("departmentId") || undefined
     const roleParam = searchParams.get("role") as Role | null
@@ -30,19 +32,18 @@ export async function GET(req: NextRequest) {
       status = false
     }
 
-    const employees = await EmployeeService.getEmployees({
+    const { items, total } = await EmployeeService.getEmployees({
       search,
       departmentId,
       status,
-      role
+      role,
+      skip,
+      take
     })
 
-    return NextResponse.json(employees)
+    return apiPaginated(items, total, page, pageSize)
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Internal Server Error" },
-      { status: 500 }
-    )
+    return apiServerError(error.message || "Internal Server Error")
   }
 }
 export const runtime = "nodejs"
