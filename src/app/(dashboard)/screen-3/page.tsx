@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { 
   Box, 
   CheckCircle2, 
@@ -64,20 +65,25 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* ─── QUICK ACTIONS ─── */}
       <div className="quick-actions-row fade-in-up" style={{ animationDelay: '0.1s' }}>
-        <button className="qa-btn">
-          <Plus />
-          Register Asset
-        </button>
-        <button className="qa-btn">
-          <CalendarPlus />
-          Book Resource
-        </button>
-        <button className="qa-btn">
-          <Ticket />
-          Raise Request
-        </button>
+        <Link href="/assets" style={{ textDecoration: 'none' }}>
+          <button className="qa-btn">
+            <Plus />
+            Register Asset
+          </button>
+        </Link>
+        <Link href="/bookings" style={{ textDecoration: 'none' }}>
+          <button className="qa-btn">
+            <CalendarPlus />
+            Book Resource
+          </button>
+        </Link>
+        <Link href="/maintenance" style={{ textDecoration: 'none' }}>
+          <button className="qa-btn">
+            <Ticket />
+            Raise Request
+          </button>
+        </Link>
       </div>
 
       {/* ─── TODAY'S OVERVIEW (KPIs) ─── */}
