@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import prisma from "@/lib/db"
 import { checkRole, rbacResponse } from "@/lib/rbac"
 import { Role, AssetStatus, AllocationStatus, AuditStatus, BookingStatus, MaintenanceStatus } from "@prisma/client"
+import { apiSuccess, apiServerError } from "@/lib/api-response"
 
 export async function GET(req: NextRequest) {
-  // All logged-in roles can access analytics to drive their personalized home dashboard
   const rbac = await checkRole([
     Role.ADMIN,
     Role.ASSET_MANAGER,
@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
       count: c._count.assets
     }))
 
-    return NextResponse.json({
+    return apiSuccess({
       kpis: {
         totalAssets,
         availableAssets,
@@ -103,10 +103,7 @@ export async function GET(req: NextRequest) {
       }
     })
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Internal Server Error" },
-      { status: 500 }
-    )
+    return apiServerError(error.message || "Internal Server Error")
   }
 }
 export const runtime = "nodejs"

@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { MaintenanceService } from "@/services/maintenance.service"
 import { checkRole, rbacResponse } from "@/lib/rbac"
 import prisma from "@/lib/db"
 import { Role } from "@prisma/client"
+import { apiSuccess, apiNotFound, apiForbidden, apiServerError } from "@/lib/api-response"
 
 export async function GET(
   req: NextRequest,
@@ -31,35 +32,30 @@ export async function GET(
     })
 
     if (!request) {
-      return NextResponse.json({ error: "Maintenance request not found" }, { status: 404 })
+      return apiNotFound("Maintenance request")
     }
 
     // Limit standard employee from viewing requests they didn't raise
     if (rbac.user.role === Role.EMPLOYEE && request.requestedById !== rbac.user.employeeId) {
-      return NextResponse.json({ error: "Forbidden: You cannot view this maintenance request" }, { status: 403 })
+      return apiForbidden("You cannot view this maintenance request")
     }
 
-    return NextResponse.json(request)
+    return apiSuccess(request)
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Internal Server Error" },
-      { status: 500 }
-    )
+    return apiServerError(error.message || "Internal Server Error")
   }
 }
 
-export async function PUT(
+async function handleResolve(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  id: string
 ) {
-  // Gated to Admin and Asset Manager
   const rbac = await checkRole([Role.ADMIN, Role.ASSET_MANAGER])
   if (!rbac.authorized) {
     return rbacResponse(rbac.status, rbac.message)
   }
 
   try {
-    const { id } = await params
     const body = await req.json()
     const { actualCost, notes } = body
 
@@ -68,12 +64,25 @@ export async function PUT(
       notes
     })
 
-    return NextResponse.json(resolved)
+    return apiSuccess(resolved, 200, "Maintenance request resolved successfully")
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Bad Request" },
-      { status: 400 }
-    )
+    return apiServerError(error.message || "Bad Request")
   }
+}
+
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  return handleResolve(req, id)
+}
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  return handleResolve(req, id)
 }
 export const runtime = "nodejs"

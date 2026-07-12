@@ -1,13 +1,13 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { EmployeeService } from "@/services/employee.service"
 import { checkRole, rbacResponse } from "@/lib/rbac"
 import { Role } from "@prisma/client"
+import { apiSuccess, apiServerError, apiValidationError } from "@/lib/api-response"
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  // Gated to Admin only
   const rbac = await checkRole([Role.ADMIN])
   if (!rbac.authorized) {
     return rbacResponse(rbac.status, rbac.message)
@@ -19,28 +19,18 @@ export async function POST(
     const { role } = body
 
     if (!role || !Object.values(Role).includes(role as Role)) {
-      return NextResponse.json(
-        { error: "A valid role selection is required" },
-        { status: 400 }
-      )
+      return apiValidationError("A valid role selection is required", "role")
     }
 
     const updatedUser = await EmployeeService.promoteEmployee(id, role as Role)
     
-    return NextResponse.json({
-      success: true,
-      message: `Employee role successfully updated to ${role}`,
-      user: {
-        id: updatedUser.id,
-        email: updatedUser.email,
-        role: updatedUser.role
-      }
-    })
+    return apiSuccess({
+      id: updatedUser.id,
+      email: updatedUser.email,
+      role: updatedUser.role
+    }, 200, `Employee role successfully updated to ${role}`)
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Bad Request" },
-      { status: 400 }
-    )
+    return apiServerError(error.message || "Bad Request")
   }
 }
 export const runtime = "nodejs"

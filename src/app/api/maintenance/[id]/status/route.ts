@@ -1,25 +1,24 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { MaintenanceService } from "@/services/maintenance.service"
 import { checkRole, rbacResponse } from "@/lib/rbac"
 import { Role } from "@prisma/client"
+import { apiSuccess, apiServerError, apiValidationError } from "@/lib/api-response"
 
-export async function PUT(
+async function handleStatusChange(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  id: string
 ) {
-  // Status workflow actions are restricted to Admin and Asset Manager
   const rbac = await checkRole([Role.ADMIN, Role.ASSET_MANAGER])
   if (!rbac.authorized) {
     return rbacResponse(rbac.status, rbac.message)
   }
 
   try {
-    const { id } = await params
     const body = await req.json()
     const { action, technicianId, notes } = body
 
     if (!action) {
-      return NextResponse.json({ error: "action is required in request body" }, { status: 400 })
+      return apiValidationError("action is required in request body", "action")
     }
 
     let result
@@ -29,7 +28,7 @@ export async function PUT(
         break
       case "ASSIGN_TECHNICIAN":
         if (!technicianId) {
-          return NextResponse.json({ error: "technicianId is required for assignment" }, { status: 400 })
+          return apiValidationError("technicianId is required for assignment", "technicianId")
         }
         result = await MaintenanceService.assignTechnician(id, technicianId)
         break
@@ -40,18 +39,28 @@ export async function PUT(
         result = await MaintenanceService.rejectRequest(id, notes)
         break
       default:
-        return NextResponse.json(
-          { error: "Invalid action. Supported actions: APPROVE, ASSIGN_TECHNICIAN, START, REJECT" },
-          { status: 400 }
-        )
+        return apiValidationError("Invalid action. Supported actions: APPROVE, ASSIGN_TECHNICIAN, START, REJECT")
     }
 
-    return NextResponse.json({ success: true, request: result })
+    return apiSuccess(result, 200, `Maintenance status updated: ${action}`)
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Bad Request" },
-      { status: 400 }
-    )
+    return apiServerError(error.message || "Bad Request")
   }
+}
+
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  return handleStatusChange(req, id)
+}
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  return handleStatusChange(req, id)
 }
 export const runtime = "nodejs"

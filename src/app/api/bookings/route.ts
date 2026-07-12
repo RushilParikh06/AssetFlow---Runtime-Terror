@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { BookingService } from "@/services/booking.service"
 import { checkRole, rbacResponse } from "@/lib/rbac"
 import { Role, BookingStatus } from "@prisma/client"
+import { apiPaginated, apiCreated, apiServerError, apiValidationError, parsePagination } from "@/lib/api-response"
 
 export async function GET(req: NextRequest) {
   const rbac = await checkRole([
@@ -17,6 +18,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const searchParams = req.nextUrl.searchParams
+    const { page, pageSize, skip, take } = parsePagination(searchParams)
     const resourceId = searchParams.get("resourceId") || undefined
     const bookedById = searchParams.get("bookedById") || undefined
     const statusParam = searchParams.get("status") as BookingStatus | null
@@ -27,25 +29,23 @@ export async function GET(req: NextRequest) {
     const from = fromParam ? new Date(fromParam) : undefined
     const to = toParam ? new Date(toParam) : undefined
 
-    const bookings = await BookingService.getBookings({
+    const { items, total } = await BookingService.getBookings({
       resourceId,
       bookedById,
       status,
       from,
-      to
+      to,
+      skip,
+      take
     })
 
-    return NextResponse.json(bookings)
+    return apiPaginated(items, total, page, pageSize)
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Internal Server Error" },
-      { status: 500 }
-    )
+    return apiServerError(error.message || "Internal Server Error")
   }
 }
 
 export async function POST(req: NextRequest) {
-  // Gated to all logged in roles
   const rbac = await checkRole([
     Role.ADMIN,
     Role.ASSET_MANAGER,
@@ -61,14 +61,11 @@ export async function POST(req: NextRequest) {
     const { resourceId, startTime, endTime, purpose } = body
 
     if (!resourceId || !startTime || !endTime) {
-      return NextResponse.json(
-        { error: "Missing required fields: resourceId, startTime, endTime" },
-        { status: 400 }
-      )
+      return apiValidationError("Missing required fields: resourceId, startTime, endTime")
     }
 
     if (!rbac.user.employeeId) {
-      return NextResponse.json({ error: "Your user account is not linked to an employee profile" }, { status: 400 })
+      return apiValidationError("Your user account is not linked to an employee profile")
     }
 
     const booking = await BookingService.createBooking({
@@ -79,12 +76,9 @@ export async function POST(req: NextRequest) {
       purpose
     })
 
-    return NextResponse.json(booking, { status: 201 })
+    return apiCreated(booking, "Resource booked successfully")
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Bad Request" },
-      { status: 400 } // Emits 400/409 error on booking overlaps
-    )
+    return apiServerError(error.message || "Bad Request")
   }
 }
 export const runtime = "nodejs"

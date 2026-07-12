@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { EmployeeService } from "@/services/employee.service"
 import { checkRole, rbacResponse } from "@/lib/rbac"
 import { Role } from "@prisma/client"
+import { apiSuccess, apiNotFound, apiForbidden, apiServerError } from "@/lib/api-response"
 
 export async function GET(
   req: NextRequest,
@@ -22,20 +23,17 @@ export async function GET(
     const { id } = await params
     const employee = await EmployeeService.getEmployeeById(id)
     if (!employee) {
-      return NextResponse.json({ error: "Employee not found" }, { status: 404 })
+      return apiNotFound("Employee")
     }
-    return NextResponse.json(employee)
+    return apiSuccess(employee)
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Internal Server Error" },
-      { status: 500 }
-    )
+    return apiServerError(error.message || "Internal Server Error")
   }
 }
 
-export async function PUT(
+async function handleUpdate(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  id: string
 ) {
   const rbac = await checkRole([
     Role.ADMIN,
@@ -48,11 +46,9 @@ export async function PUT(
   }
 
   try {
-    const { id } = await params
-    
     // Check if the user is an employee modifying someone else's profile (restricted)
     if (rbac.user.role === Role.EMPLOYEE && rbac.user.employeeId !== id) {
-      return NextResponse.json({ error: "Forbidden: You can only edit your own profile" }, { status: 403 })
+      return apiForbidden("You can only edit your own profile")
     }
 
     const body = await req.json()
@@ -60,7 +56,7 @@ export async function PUT(
 
     // Only Admin can modify departmentId or status of an employee
     if ((departmentId !== undefined || status !== undefined) && rbac.user.role !== Role.ADMIN) {
-      return NextResponse.json({ error: "Forbidden: Only Administrators can modify department assignments or employee status" }, { status: 403 })
+      return apiForbidden("Only Administrators can modify department assignments or employee status")
     }
 
     const updated = await EmployeeService.updateEmployee(id, {
@@ -71,12 +67,25 @@ export async function PUT(
       status
     })
 
-    return NextResponse.json(updated)
+    return apiSuccess(updated, 200, "Profile updated successfully")
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Bad Request" },
-      { status: 400 }
-    )
+    return apiServerError(error.message || "Bad Request")
   }
+}
+
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  return handleUpdate(req, id)
+}
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  return handleUpdate(req, id)
 }
 export const runtime = "nodejs"

@@ -1,12 +1,13 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { BookingService } from "@/services/booking.service"
 import { checkRole, rbacResponse } from "@/lib/rbac"
 import prisma from "@/lib/db"
 import { Role } from "@prisma/client"
+import { apiSuccess, apiNotFound, apiForbidden, apiServerError, apiValidationError } from "@/lib/api-response"
 
-export async function PUT(
+async function handleReschedule(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  id: string
 ) {
   const rbac = await checkRole([
     Role.ADMIN,
@@ -19,12 +20,10 @@ export async function PUT(
   }
 
   try {
-    const { id } = await params
-    
     // Check ownership unless admin/manager
     const booking = await prisma.booking.findUnique({ where: { id } })
     if (!booking) {
-      return NextResponse.json({ error: "Booking not found" }, { status: 404 })
+      return apiNotFound("Booking")
     }
 
     if (
@@ -32,14 +31,14 @@ export async function PUT(
       rbac.user.role !== Role.ASSET_MANAGER &&
       booking.bookedById !== rbac.user.employeeId
     ) {
-      return NextResponse.json({ error: "Forbidden: You do not own this booking" }, { status: 403 })
+      return apiForbidden("You do not own this booking")
     }
 
     const body = await req.json()
     const { startTime, endTime } = body
 
     if (!startTime || !endTime) {
-      return NextResponse.json({ error: "startTime and endTime are required" }, { status: 400 })
+      return apiValidationError("startTime and endTime are required fields")
     }
 
     const rescheduled = await BookingService.rescheduleBooking(id, {
@@ -47,13 +46,26 @@ export async function PUT(
       endTime: new Date(endTime)
     })
 
-    return NextResponse.json(rescheduled)
+    return apiSuccess(rescheduled, 200, "Booking rescheduled successfully")
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Bad Request" },
-      { status: 400 }
-    )
+    return apiServerError(error.message || "Bad Request")
   }
+}
+
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  return handleReschedule(req, id)
+}
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  return handleReschedule(req, id)
 }
 
 export async function DELETE(
@@ -76,7 +88,7 @@ export async function DELETE(
     // Check ownership unless admin/manager
     const booking = await prisma.booking.findUnique({ where: { id } })
     if (!booking) {
-      return NextResponse.json({ error: "Booking not found" }, { status: 404 })
+      return apiNotFound("Booking")
     }
 
     if (
@@ -84,20 +96,13 @@ export async function DELETE(
       rbac.user.role !== Role.ASSET_MANAGER &&
       booking.bookedById !== rbac.user.employeeId
     ) {
-      return NextResponse.json({ error: "Forbidden: You do not own this booking" }, { status: 403 })
+      return apiForbidden("You do not own this booking")
     }
 
     const cancelled = await BookingService.cancelBooking(id)
-    return NextResponse.json({
-      success: true,
-      message: "Booking cancelled successfully",
-      booking: cancelled
-    })
+    return apiSuccess(cancelled, 200, "Booking cancelled successfully")
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Bad Request" },
-      { status: 400 }
-    )
+    return apiServerError(error.message || "Bad Request")
   }
 }
 export const runtime = "nodejs"
