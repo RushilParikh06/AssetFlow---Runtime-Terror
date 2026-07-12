@@ -123,6 +123,18 @@ npm run dev
 
 Open http://localhost:3000
 
+### Seed & Testing Credentials
+
+Once the database is migrated and seeded (`npx prisma db seed`), you can log in and test different system modules using the following pre-configured credentials (all passwords are set to the suffix `123!`):
+
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| **Admin** | `admin@assetflow.com` | `Admin123!` |
+| **Asset Manager** | `manager@assetflow.com` | `Manager123!` |
+| **Department Head** | `head@assetflow.com` | `Head123!` |
+| **Employee** | `employee@assetflow.com` | `Employee123!` |
+| **Auditor** | `auditor@assetflow.com` | `Auditor123!` |
+
 ---
 
 ## 👥 User Roles
