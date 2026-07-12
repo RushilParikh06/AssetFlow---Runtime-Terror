@@ -17,6 +17,8 @@ assetflow/
 │    └── migrations/
 |
 ├── public/
+|    ├── images/
+│    └── icons/
 ├── src/
 └── tests/
 ```
