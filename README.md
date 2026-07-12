@@ -12,7 +12,7 @@ AssetFlow is a modern ERP platform for managing the complete lifecycle of organi
 - 📦 Asset Registration & Tracking
 - 🔄 Asset Allocation, Transfer & Return
 - 🏢 Department & Employee Management
-- 📅 Resource Booking
+- 📅 Resource Booking.
 - 🔧 Maintenance Workflow
 - 📋 Audit Management
 - 📊 Reports & Analytics
