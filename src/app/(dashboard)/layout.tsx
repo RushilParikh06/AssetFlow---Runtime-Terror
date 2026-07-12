@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { 
   LayoutDashboard, 
   Building2, 
@@ -14,7 +15,8 @@ import {
   Bell,
   Search,
   Settings,
-  ChevronDown
+  ChevronDown,
+  LogOut
 } from "lucide-react";
 
 export default function DashboardLayout({
@@ -84,6 +86,14 @@ export default function DashboardLayout({
               <span className="user-name">Alex Morgan</span>
               <span className="user-role">Administrator</span>
             </div>
+            <button 
+              onClick={() => signOut({ callbackUrl: '/login' })}
+              className="action-btn"
+              style={{ marginLeft: 'auto', background: 'transparent', border: 'none', color: 'var(--text-2)', cursor: 'pointer', padding: '4px' }}
+              title="Log out"
+            >
+              <LogOut size={18} />
+            </button>
           </div>
         </div>
       </aside>
