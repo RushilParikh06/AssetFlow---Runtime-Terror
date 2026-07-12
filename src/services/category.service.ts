@@ -65,18 +65,28 @@ export class CategoryService {
   /**
    * Get all categories
    */
-  static async getAllCategories(filters?: { status?: boolean }) {
-    return await prisma.assetCategory.findMany({
-      where: {
-        status: filters?.status
-      },
-      include: {
-        _count: {
-          select: { assets: true }
-        }
-      },
-      orderBy: { name: "asc" }
-    })
+  static async getAllCategories(filters?: { status?: boolean; skip?: number; take?: number }) {
+    const where: any = {}
+    if (filters?.status !== undefined) {
+      where.status = filters.status
+    }
+
+    const [items, total] = await Promise.all([
+      prisma.assetCategory.findMany({
+        where,
+        include: {
+          _count: {
+            select: { assets: true }
+          }
+        },
+        orderBy: { name: "asc" },
+        skip: filters?.skip,
+        take: filters?.take,
+      }),
+      prisma.assetCategory.count({ where })
+    ])
+
+    return { items, total }
   }
 
   /**

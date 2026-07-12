@@ -29,16 +29,23 @@ export class NotificationService {
   /**
    * Get all notifications for a specific user
    */
-  static async getUserNotifications(userId: string, filters?: { unreadOnly?: boolean }) {
+  static async getUserNotifications(userId: string, filters?: { unreadOnly?: boolean; skip?: number; take?: number }) {
     const where: any = { userId }
     if (filters?.unreadOnly) {
       where.read = false
     }
 
-    return await prisma.notification.findMany({
-      where,
-      orderBy: { createdAt: "desc" }
-    })
+    const [items, total] = await Promise.all([
+      prisma.notification.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip: filters?.skip,
+        take: filters?.take,
+      }),
+      prisma.notification.count({ where })
+    ])
+
+    return { items, total }
   }
 
   /**

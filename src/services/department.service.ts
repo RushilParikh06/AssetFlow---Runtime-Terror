@@ -86,20 +86,30 @@ export class DepartmentService {
   /**
    * Get all departments (with hierarchy and head info)
    */
-  static async getAllDepartments(filters?: { status?: boolean }) {
-    return await prisma.department.findMany({
-      where: {
-        status: filters?.status
-      },
-      include: {
-        parentDepartment: true,
-        departmentHead: true,
-        _count: {
-          select: { employees: true, allocations: true }
-        }
-      },
-      orderBy: { name: "asc" }
-    })
+  static async getAllDepartments(filters?: { status?: boolean; skip?: number; take?: number }) {
+    const where: any = {}
+    if (filters?.status !== undefined) {
+      where.status = filters.status
+    }
+
+    const [items, total] = await Promise.all([
+      prisma.department.findMany({
+        where,
+        include: {
+          parentDepartment: true,
+          departmentHead: true,
+          _count: {
+            select: { employees: true, allocations: true }
+          }
+        },
+        orderBy: { name: "asc" },
+        skip: filters?.skip,
+        take: filters?.take,
+      }),
+      prisma.department.count({ where })
+    ])
+
+    return { items, total }
   }
 
   /**

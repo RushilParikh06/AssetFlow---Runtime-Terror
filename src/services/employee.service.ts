@@ -10,6 +10,8 @@ export class EmployeeService {
     departmentId?: string
     status?: boolean
     role?: Role
+    skip?: number
+    take?: number
   }) {
     const where: any = {}
 
@@ -35,21 +37,28 @@ export class EmployeeService {
       }
     }
 
-    return await prisma.employee.findMany({
-      where,
-      include: {
-        department: true,
-        user: {
-          select: {
-            id: true,
-            email: true,
-            role: true,
-            status: true
+    const [items, total] = await Promise.all([
+      prisma.employee.findMany({
+        where,
+        include: {
+          department: true,
+          user: {
+            select: {
+              id: true,
+              email: true,
+              role: true,
+              status: true
+            }
           }
-        }
-      },
-      orderBy: { employeeId: "asc" }
-    })
+        },
+        orderBy: { employeeId: "asc" },
+        skip: params?.skip,
+        take: params?.take,
+      }),
+      prisma.employee.count({ where })
+    ])
+
+    return { items, total }
   }
 
   /**

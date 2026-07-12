@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { AllocationService } from "@/services/allocation.service"
 import { checkRole, rbacResponse } from "@/lib/rbac"
 import prisma from "@/lib/db"
 import { Role, TransferStatus } from "@prisma/client"
+import { apiSuccess, apiCreated, apiServerError, apiValidationError } from "@/lib/api-response"
 
 export async function GET(req: NextRequest) {
   const rbac = await checkRole([
@@ -60,12 +61,9 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: "desc" }
     })
 
-    return NextResponse.json(transfers)
+    return apiSuccess(transfers)
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Internal Server Error" },
-      { status: 500 }
-    )
+    return apiServerError(error.message || "Internal Server Error")
   }
 }
 
@@ -85,11 +83,11 @@ export async function POST(req: NextRequest) {
     const { assetId, targetEmployeeId, targetDepartmentId, notes } = body
 
     if (!assetId) {
-      return NextResponse.json({ error: "assetId is required" }, { status: 400 })
+      return apiValidationError("assetId is required", "assetId")
     }
 
     if (!rbac.user.employeeId) {
-      return NextResponse.json({ error: "Your user account is not linked to an employee profile" }, { status: 400 })
+      return apiValidationError("Your user account is not linked to an employee profile")
     }
 
     const transfer = await AllocationService.requestTransfer({
@@ -100,17 +98,13 @@ export async function POST(req: NextRequest) {
       notes
     })
 
-    return NextResponse.json(transfer, { status: 201 })
+    return apiCreated(transfer, "Transfer request submitted")
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Bad Request" },
-      { status: 400 }
-    )
+    return apiServerError(error.message || "Bad Request")
   }
 }
 
-export async function PUT(req: NextRequest) {
-  // Approving transfers is gated to Admin, Asset Manager, or Department Head
+export async function PATCH(req: NextRequest) {
   const rbac = await checkRole([Role.ADMIN, Role.ASSET_MANAGER, Role.DEPARTMENT_HEAD])
   if (!rbac.authorized || !rbac.user) {
     return rbacResponse(rbac.status, rbac.message)
@@ -121,20 +115,17 @@ export async function PUT(req: NextRequest) {
     const { requestId } = body
 
     if (!requestId) {
-      return NextResponse.json({ error: "requestId is required" }, { status: 400 })
+      return apiValidationError("requestId is required", "requestId")
     }
 
     if (!rbac.user.employeeId) {
-      return NextResponse.json({ error: "Your user account is not linked to an employee profile" }, { status: 400 })
+      return apiValidationError("Your user account is not linked to an employee profile")
     }
 
     const transfer = await AllocationService.approveTransfer(requestId, rbac.user.employeeId)
-    return NextResponse.json(transfer)
+    return apiSuccess(transfer, 200, "Transfer approved successfully")
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Bad Request" },
-      { status: 400 }
-    )
+    return apiServerError(error.message || "Bad Request")
   }
 }
 export const runtime = "nodejs"

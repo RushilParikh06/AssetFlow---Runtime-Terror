@@ -249,21 +249,28 @@ export class AllocationService {
   /**
    * Fetch active allocations, including overdue ones
    */
-  static async getActiveAllocations(filters?: { overdueOnly?: boolean }) {
+  static async getActiveAllocations(filters?: { overdueOnly?: boolean; skip?: number; take?: number }) {
     const where: any = { status: AllocationStatus.ACTIVE }
 
     if (filters?.overdueOnly) {
       where.expectedReturnDate = { lt: new Date() }
     }
 
-    return await prisma.allocation.findMany({
-      where,
-      include: {
-        asset: true,
-        assignedTo: true,
-        department: true
-      },
-      orderBy: { allocationDate: "desc" }
-    })
+    const [items, total] = await Promise.all([
+      prisma.allocation.findMany({
+        where,
+        include: {
+          asset: true,
+          assignedTo: true,
+          department: true
+        },
+        orderBy: { allocationDate: "desc" },
+        skip: filters?.skip,
+        take: filters?.take,
+      }),
+      prisma.allocation.count({ where })
+    ])
+
+    return { items, total }
   }
 }

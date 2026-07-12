@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { AllocationService } from "@/services/allocation.service"
 import { checkRole, rbacResponse } from "@/lib/rbac"
 import { Role } from "@prisma/client"
+import { apiPaginated, apiCreated, apiServerError, apiValidationError, parsePagination } from "@/lib/api-response"
 
 export async function GET(req: NextRequest) {
   const rbac = await checkRole([
@@ -17,20 +18,17 @@ export async function GET(req: NextRequest) {
 
   try {
     const searchParams = req.nextUrl.searchParams
+    const { page, pageSize, skip, take } = parsePagination(searchParams)
     const overdueOnly = searchParams.get("overdue") === "true"
 
-    const allocations = await AllocationService.getActiveAllocations({ overdueOnly })
-    return NextResponse.json(allocations)
+    const { items, total } = await AllocationService.getActiveAllocations({ overdueOnly, skip, take })
+    return apiPaginated(items, total, page, pageSize)
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Internal Server Error" },
-      { status: 500 }
-    )
+    return apiServerError(error.message || "Internal Server Error")
   }
 }
 
 export async function POST(req: NextRequest) {
-  // Gated to Admin and Asset Manager
   const rbac = await checkRole([Role.ADMIN, Role.ASSET_MANAGER])
   if (!rbac.authorized) {
     return rbacResponse(rbac.status, rbac.message)
@@ -41,10 +39,7 @@ export async function POST(req: NextRequest) {
     const { assetId, assignedToId, departmentId, expectedReturnDate, notes, conditionBefore } = body
 
     if (!assetId || !conditionBefore) {
-      return NextResponse.json(
-        { error: "assetId and conditionBefore are required fields" },
-        { status: 400 }
-      )
+      return apiValidationError("assetId and conditionBefore are required fields")
     }
 
     const allocation = await AllocationService.allocateAsset({
@@ -56,12 +51,9 @@ export async function POST(req: NextRequest) {
       conditionBefore
     })
 
-    return NextResponse.json(allocation, { status: 201 })
+    return apiCreated(allocation, "Asset allocated successfully")
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Bad Request" },
-      { status: 400 } // This will return 400 for business logic violations (e.g. already allocated)
-    )
+    return apiServerError(error.message || "Bad Request")
   }
 }
 export const runtime = "nodejs"

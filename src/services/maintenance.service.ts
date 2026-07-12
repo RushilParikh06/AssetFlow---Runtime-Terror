@@ -221,6 +221,8 @@ export class MaintenanceService {
     priority?: MaintenancePriority
     requestedById?: string
     technicianId?: string
+    skip?: number
+    take?: number
   }) {
     const where: any = {}
 
@@ -240,16 +242,23 @@ export class MaintenanceService {
       where.technicianId = filters.technicianId
     }
 
-    return await prisma.maintenanceRequest.findMany({
-      where,
-      include: {
-        asset: {
-          include: { category: true }
+    const [items, total] = await Promise.all([
+      prisma.maintenanceRequest.findMany({
+        where,
+        include: {
+          asset: {
+            include: { category: true }
+          },
+          requestedBy: true,
+          technician: true
         },
-        requestedBy: true,
-        technician: true
-      },
-      orderBy: { createdAt: "desc" }
-    })
+        orderBy: { createdAt: "desc" },
+        skip: filters?.skip,
+        take: filters?.take,
+      }),
+      prisma.maintenanceRequest.count({ where })
+    ])
+
+    return { items, total }
   }
 }

@@ -97,6 +97,8 @@ export class AssetService {
     location?: string
     sharedBookableFlag?: boolean
     departmentId?: string // filter assets allocated to a department
+    skip?: number
+    take?: number
   }) {
     const where: any = {}
 
@@ -135,17 +137,24 @@ export class AssetService {
       }
     }
 
-    return await prisma.asset.findMany({
-      where,
-      include: {
-        category: true,
-        allocations: {
-          where: { status: "ACTIVE" },
-          include: { assignedTo: true, department: true }
-        }
-      },
-      orderBy: { assetTag: "asc" }
-    })
+    const [items, total] = await Promise.all([
+      prisma.asset.findMany({
+        where,
+        include: {
+          category: true,
+          allocations: {
+            where: { status: "ACTIVE" },
+            include: { assignedTo: true, department: true }
+          }
+        },
+        orderBy: { assetTag: "asc" },
+        skip: params?.skip,
+        take: params?.take,
+      }),
+      prisma.asset.count({ where })
+    ])
+
+    return { items, total }
   }
 
   /**

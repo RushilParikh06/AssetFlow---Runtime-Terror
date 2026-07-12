@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { AssetService } from "@/services/asset.service"
 import { checkRole, rbacResponse } from "@/lib/rbac"
-import { Role, AssetStatus } from "@prisma/client"
+import { Role } from "@prisma/client"
+import { apiSuccess, apiNotFound, apiServerError, apiValidationError } from "@/lib/api-response"
 
 export async function GET(
   req: NextRequest,
@@ -22,22 +23,18 @@ export async function GET(
     const { id } = await params
     const asset = await AssetService.getAssetById(id)
     if (!asset) {
-      return NextResponse.json({ error: "Asset not found" }, { status: 404 })
+      return apiNotFound("Asset")
     }
-    return NextResponse.json(asset)
+    return apiSuccess(asset)
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Internal Server Error" },
-      { status: 500 }
-    )
+    return apiServerError(error.message || "Internal Server Error")
   }
 }
 
-export async function PUT(
+export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  // Gated to Admin and Asset Manager
   const rbac = await checkRole([Role.ADMIN, Role.ASSET_MANAGER])
   if (!rbac.authorized) {
     return rbacResponse(rbac.status, rbac.message)
@@ -47,19 +44,15 @@ export async function PUT(
     const { id } = await params
     const body = await req.json()
     
-    // Parse dates if provided
     const updateData: any = { ...body }
     if (body.acquisitionDate) updateData.acquisitionDate = new Date(body.acquisitionDate)
     if (body.warrantyExpiry) updateData.warrantyExpiry = new Date(body.warrantyExpiry)
     if (body.acquisitionCost) updateData.acquisitionCost = parseFloat(body.acquisitionCost)
 
     const updated = await AssetService.updateAsset(id, updateData)
-    return NextResponse.json(updated)
+    return apiSuccess(updated, 200, "Asset updated successfully")
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Bad Request" },
-      { status: 400 }
-    )
+    return apiServerError(error.message || "Bad Request")
   }
 }
 
@@ -67,7 +60,6 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  // Deletions are strictly Admin only
   const rbac = await checkRole([Role.ADMIN])
   if (!rbac.authorized) {
     return rbacResponse(rbac.status, rbac.message)
@@ -76,12 +68,9 @@ export async function DELETE(
   try {
     const { id } = await params
     await AssetService.deleteAsset(id)
-    return NextResponse.json({ success: true, message: "Asset deleted successfully" })
+    return apiSuccess(null, 200, "Asset deleted successfully")
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Bad Request" },
-      { status: 400 }
-    )
+    return apiServerError(error.message || "Bad Request")
   }
 }
 export const runtime = "nodejs"

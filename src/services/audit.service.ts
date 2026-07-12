@@ -201,14 +201,21 @@ export class AuditService {
   /**
    * List all audit cycles
    */
-  static async getAuditCycles() {
-    return await prisma.audit.findMany({
-      include: {
-        _count: {
-          select: { auditItems: true }
-        }
-      },
-      orderBy: { createdAt: "desc" }
-    })
+  static async getAuditCycles(params?: { skip?: number; take?: number }) {
+    const [items, total] = await Promise.all([
+      prisma.audit.findMany({
+        include: {
+          _count: {
+            select: { auditItems: true }
+          }
+        },
+        orderBy: { createdAt: "desc" },
+        skip: params?.skip,
+        take: params?.take,
+      }),
+      prisma.audit.count()
+    ])
+
+    return { items, total }
   }
 }

@@ -187,6 +187,8 @@ export class BookingService {
     status?: BookingStatus
     from?: Date
     to?: Date
+    skip?: number
+    take?: number
   }) {
     const where: any = {}
 
@@ -212,15 +214,22 @@ export class BookingService {
       }
     }
 
-    return await prisma.booking.findMany({
-      where,
-      include: {
-        resource: true,
-        bookedBy: {
-          include: { department: true }
-        }
-      },
-      orderBy: { startTime: "asc" }
-    })
+    const [items, total] = await Promise.all([
+      prisma.booking.findMany({
+        where,
+        include: {
+          resource: true,
+          bookedBy: {
+            include: { department: true }
+          }
+        },
+        orderBy: { startTime: "asc" },
+        skip: filters?.skip,
+        take: filters?.take,
+      }),
+      prisma.booking.count({ where })
+    ])
+
+    return { items, total }
   }
 }

@@ -1,13 +1,13 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { AllocationService } from "@/services/allocation.service"
 import { checkRole, rbacResponse } from "@/lib/rbac"
 import { Role } from "@prisma/client"
+import { apiSuccess, apiServerError, apiValidationError } from "@/lib/api-response"
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  // Gated to Admin and Asset Manager
   const rbac = await checkRole([Role.ADMIN, Role.ASSET_MANAGER])
   if (!rbac.authorized) {
     return rbacResponse(rbac.status, rbac.message)
@@ -19,10 +19,7 @@ export async function POST(
     const { conditionAfter, notes } = body
 
     if (!conditionAfter) {
-      return NextResponse.json(
-        { error: "conditionAfter is a required field" },
-        { status: 400 }
-      )
+      return apiValidationError("conditionAfter is a required field", "conditionAfter")
     }
 
     const closedAllocation = await AllocationService.returnAsset({
@@ -31,16 +28,9 @@ export async function POST(
       notes
     })
 
-    return NextResponse.json({
-      success: true,
-      message: "Asset returned successfully",
-      allocation: closedAllocation
-    })
+    return apiSuccess(closedAllocation, 200, "Asset returned successfully")
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Bad Request" },
-      { status: 400 }
-    )
+    return apiServerError(error.message || "Bad Request")
   }
 }
 export const runtime = "nodejs"
