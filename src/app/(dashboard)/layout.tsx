@@ -77,6 +77,14 @@ export default function DashboardLayout({
             <Building2 />
             <span>Organization Setup</span>
           </Link>
+          <button 
+            onClick={() => signOut({ callbackUrl: '/login' })}
+            className="nav-item"
+            style={{ background: 'transparent', border: 'none', textAlign: 'left', width: '100%', padding: '9px 14px' }}
+          >
+            <LogOut />
+            <span>Sign Out</span>
+          </button>
         </nav>
 
         <div className="sidebar-footer">

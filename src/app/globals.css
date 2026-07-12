@@ -1273,16 +1273,9 @@ footer {
 .nav-item.active {
   background: rgba(99, 102, 241, 0.08);
   color: var(--accent);
-}
-.nav-item.active::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 10%;
-  height: 80%;
-  width: 3px;
-  background: var(--accent);
-  border-radius: 0 4px 4px 0;
+  border-left: 3px solid var(--accent);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
 .nav-item svg {
   width: 18px;
