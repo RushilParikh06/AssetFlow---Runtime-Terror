@@ -1,169 +1,260 @@
-## Project Structure
+# AssetFlow
 
-```text
-assetflow/
-├── .env.local
-├── .env.example
-├── .gitignore
-├── next.config.js
-├── package.json
-├── tsconfig.json
-├── tailwind.config.ts
-├── postcss.config.js
-├── README.md
-├── prisma/
-|    ├── schema.prisma
-│    ├── seed.ts
-│    └── migrations/
-|
-├── public/
-|    ├── images/
-│    └── icons/
-├── src/
-│   ├── app/                            
-│   │   ├── layout.tsx
-│   │   ├── page.tsx                     
-│   │   ├── globals.css
-│   │   │
-│   │   ├── (auth)/                      
-│   │   │   ├── login/page.tsx
-│   │   │   ├── signup/page.tsx
-│   │   │   └── forgot-password/page.tsx
-│   │   │
-│   │   ├── (dashboard)/                 
-│   │   │   ├── layout.tsx               
-│   │   │   ├── dashboard/page.tsx       
-│   │   │   │
-│   │   │   ├── organization/            
-│   │   │   │   ├── layout.tsx           
-│   │   │   │   ├── departments/page.tsx
-│   │   │   │   ├── categories/page.tsx
-│   │   │   │   └── employees/page.tsx
-│   │   │   │
-│   │   │   ├── assets/                  
-│   │   │   │   ├── page.tsx             
-│   │   │   │   ├── new/page.tsx         
-│   │   │   │   └── [assetId]/page.tsx   
-│   │   │   │
-│   │   │   ├── allocations/page.tsx     
-│   │   │   ├── bookings/page.tsx        
-│   │   │   ├── maintenance/page.tsx     
-│   │   │   │
-│   │   │   ├── audits/                  
-│   │   │   │   ├── page.tsx             
-│   │   │   │   └── [auditId]/page.tsx   
-│   │   │   │
-│   │   │   ├── reports/page.tsx         
-│   │   │   └── notifications/page.tsx   
-│   │   │
-│   │   └── api/                         
-│   │       ├── auth/
-│   │       │   ├── login/route.ts
-│   │       │   ├── signup/route.ts      
-│   │       │   └── logout/route.ts
-│   │       ├── departments/
-│   │       │   ├── route.ts             
-│   │       │   └── [id]/route.ts        
-│   │       ├── categories/
-│   │       │   ├── route.ts
-│   │       │   └── [id]/route.ts
-│   │       ├── employees/
-│   │       │   ├── route.ts
-│   │       │   └── [id]/
-│   │       │       ├── route.ts
-│   │       │       └── promote/route.ts 
-│   │       ├── assets/
-│   │       │   ├── route.ts
-│   │       │   └── [id]/
-│   │       │       ├── route.ts
-│   │       │       └── history/route.ts
-│   │       ├── allocations/
-│   │       │   ├── route.ts             
-│   │       │   ├── [id]/
-│   │       │   │   ├── route.ts
-│   │       │   │   └── return/route.ts
-│   │       │   └── transfer/route.ts    
-│   │       ├── bookings/
-│   │       │   ├── route.ts             
-│   │       │   └── [id]/route.ts        
-│   │       ├── maintenance/
-│   │       │   ├── route.ts
-│   │       │   └── [id]/
-│   │       │       ├── route.ts
-│   │       │       └── status/route.ts  
-│   │       ├── audits/
-│   │       │   ├── route.ts
-│   │       │   └── [id]/
-│   │       │       ├── route.ts
-│   │       │       ├── verify/route.ts  
-│   │       │       └── close/route.ts
-│   │       ├── notifications/route.ts
-│   │       └── reports/route.ts
-│   │
-│   ├── components/
-│   │   ├── ui/                          
-│   │   ├── layout/                      
-│   │   ├── dashboard/                   
-│   │   ├── assets/                      
-│   │   ├── allocations/                 
-│   │   ├── bookings/                   
-│   │   ├── maintenance/                
-│   │   ├── audits/                      
-│   │   └── shared/
-|   |
-|   ├── lib/
-│   │   ├── db.ts                        
-│   │   ├── auth.ts                      
-│   │   ├── rbac.ts                      
-│   │   └── validators/                  
-│   │       ├── asset.schema.ts
-│   │       ├── booking.schema.ts
-│   │       ├── allocation.schema.ts
-│   │       └── maintenance.schema.ts  
-|   |
-|   ├── services/                         
-│   │   ├── asset.service.ts
-│   │   ├── allocation.service.ts         
-│   │   ├── booking.service.ts            
-│   │   ├── maintenance.service.ts        
-│   │   ├── audit.service.ts              
-│   │   └── notification.service.ts
-|   |
-|   ├── hooks/
-│   ├── store/
-│   ├── types/
-│   │   ├── enums.ts                     
-│   │   ├── asset.types.ts
-│   │   └── index.ts
-│   │
-│   └── middleware.ts 
-└── tests/
-```
+> **Enterprise Asset & Resource Management System**
 
-Tech Stack 
+AssetFlow is a modern ERP platform for managing the complete lifecycle of organizational assets—from procurement and allocation to maintenance, audits, bookings, reporting, and organization-wide visibility.
 
-```
-Frontend:
-- Next.js 15 App Router
+---
+
+## ✨ Features
+
+- 🔐 Role-Based Authentication (Auth.js)
+- 📦 Asset Registration & Tracking
+- 🔄 Asset Allocation, Transfer & Return
+- 🏢 Department & Employee Management
+- 📅 Resource Booking
+- 🔧 Maintenance Workflow
+- 📋 Audit Management
+- 📊 Reports & Analytics
+- 🔔 Notifications & Activity Logs
+- 📱 Responsive Dashboard
+
+---
+
+## 🛠 Tech Stack
+
+### Frontend
+- Next.js 15
+- React 19
 - TypeScript
-- TailwindCSS
-- Shadcn/UI
-- React Hook Form
-- Zod
+- Tailwind CSS v4
 - Zustand
 - TanStack Query
+- React Hook Form
+- Zod
 - Recharts
 - FullCalendar
 
-Backend:
+### Backend
 - Next.js Route Handlers
-- Server Actions where appropriate
 - Prisma ORM
 - PostgreSQL
 
-Authentication:
+### Authentication
 - Auth.js v5
 - JWT Sessions
 - RBAC
 
+### Realtime & Infrastructure
+- Socket.IO
+- Redis
+- BullMQ
+- Supabase Storage
+
+---
+
+## 📂 Project Structure
+
+```text
+AssetFlow/
+├── prisma/
+├── public/
+├── src/
+│   ├── app/
+│   │   ├── (auth)/
+│   │   ├── (dashboard)/
+│   │   └── api/
+│   ├── components/
+│   ├── services/
+│   ├── hooks/
+│   ├── store/
+│   ├── lib/
+│   ├── types/
+│   └── utils/
+├── package.json
+├── tsconfig.json
+└── README.md
 ```
+
+---
+
+## 🚀 Getting Started
+
+### Clone
+
+```bash
+git clone https://github.com/RushilParikh06/AssetFlow---Runtime-Terror.git
+cd AssetFlow---Runtime-Terror
+```
+
+### Install
+
+```bash
+npm install
+```
+
+### Environment Variables
+
+Create a `.env` file.
+
+```env
+DATABASE_URL=
+NEXTAUTH_SECRET=
+NEXTAUTH_URL=
+
+SUPABASE_URL=
+SUPABASE_ANON_KEY=
+
+REDIS_URL=
+```
+
+### Prisma
+
+```bash
+npx prisma generate
+npx prisma migrate dev
+npx prisma db seed
+```
+
+### Run Development Server
+
+```bash
+npm run dev
+```
+
+Open http://localhost:3000
+
+---
+
+## 👥 User Roles
+
+- Admin
+- Asset Manager
+- Department Head
+- Employee
+- Auditor
+
+---
+
+## 📦 Core Modules
+
+- Dashboard
+- Authentication
+- Organization
+- Departments
+- Employees
+- Asset Categories
+- Asset Registry
+- Asset Allocation
+- Resource Booking
+- Maintenance
+- Audits
+- Reports
+- Notifications
+- Activity Logs
+
+---
+
+## 🔄 Asset Lifecycle
+
+```text
+Purchase
+   ↓
+Registration
+   ↓
+Available
+   ↓
+Allocated
+   ↓
+Transfer
+   ↓
+Returned
+   ↓
+Inspection
+   ↓
+Maintenance
+   ↓
+Available
+   ↓
+Retired
+```
+
+---
+
+## 📊 Reports
+
+- Asset Utilization
+- Asset Distribution
+- Maintenance Analytics
+- Booking Analytics
+- Department-wise Assets
+- Idle Assets
+- Audit Reports
+
+---
+
+## 🔒 Security
+
+- JWT Authentication
+- Role-Based Access Control
+- Password Hashing
+- Input Validation
+- Protected Routes
+
+---
+
+## 🚀 Deployment
+
+Supported platforms:
+
+- Vercel
+- Railway
+
+---
+
+## 🔮 Future Enhancements
+
+- AI-powered maintenance prediction
+- Barcode & QR scanning
+- Mobile application
+- Email notifications
+- Asset depreciation tracking
+- Approval workflows
+
+---
+
+## 🤝 Contributing
+
+```bash
+git checkout -b feature-name
+git commit -m "Add feature"
+git push origin feature-name
+```
+
+Create a Pull Request.
+
+---
+
+## 👨‍💻 Team Runtime Terror
+
+- Rushil Parikh
+- Shlok Shah
+- Team Members
+
+---
+
+## 📄 License
+
+Licensed under the MIT License.
+
+---
+
+<div align="center">
+
+### AssetFlow
+
+**Track Smarter. Manage Better.**
+
+Built with ❤️ by **Team Runtime Terror**
+
+</div>
